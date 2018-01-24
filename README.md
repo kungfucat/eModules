@@ -22,6 +22,7 @@ This android application enables the user to practice from a set of questions, s
 - Doubts section (For viewing previously flagged questions with marked response and explanations)
 - Timer (starts automatically and stops on submit button-press)
 - Analytics
+- Notepad in each question
 
 ## Mockups
 
