@@ -1,4 +1,4 @@
-<img src="https://cdnd.icons8.com/wp-content/uploads/2015/06/android_vector.jpg" align="right" />
+<img src="https://cdnd.icons8.com/wp-content/uploads/2015/06/android_vector.jpg" align="right" width="300"/>
 
 # eModules 
 
