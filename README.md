@@ -2,9 +2,9 @@
 
 # eModules 
 
-This android application enables the user to practice from a set of questions, served from a pre-packaged sqlite .db file which would be stored in the assets folder of the project, and includes features such as progress tracking, analytics, flagging (doubts), timer and search (on the basis of filters like topic, previously incorrect, keyword etc).
+This android application enables the user to practice from a set of questions and includes features such as progress tracking, analytics, flagging (doubts), timer and search (on the basis of filters like topic, previously incorrect, keyword etc).
 
-[android-sqlite-asset-helper](https://github.com/jgilfelt/android-sqlite-asset-helper) library will be used for shipping the app with pre-populated databse.
+> The questions are served from a pre-packaged sqlite ```.db``` file which would be stored in the assets folder of the project, [android-sqlite-asset-helper](https://github.com/jgilfelt/android-sqlite-asset-helper) library will be used for shipping the app with pre-populated databse.
 
 ## Features
 
