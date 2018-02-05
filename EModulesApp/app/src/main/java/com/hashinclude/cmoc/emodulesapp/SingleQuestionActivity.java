@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
 
+//Will be used to load a single question from the db
 public class SingleQuestionActivity extends AppCompatActivity {
 
     TextView textView;
@@ -15,8 +16,8 @@ public class SingleQuestionActivity extends AppCompatActivity {
 
         //Recieved the intent from MainActivity and showed the corresponding text
         Intent intent=getIntent();
-        int posiiton=intent.getIntExtra("position",0);
+        int position=intent.getIntExtra("position",0);
         textView=findViewById(R.id.questionTextView);
-        textView.setText("Q. No. = " + posiiton + " .");
+        textView.setText("Q. No. = " + position + ".");
     }
 }
