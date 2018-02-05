@@ -32,7 +32,7 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
 
     @Override
     public void onBindViewHolder(MainViewHolder holder, int position) {
-        holder.textView.setText("This is position " + position + " .");
+        holder.textView.setText(position + ". Unattempted");
     }
 
     @Override

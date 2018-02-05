@@ -13,8 +13,9 @@ public class SingleQuestionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_question);
 
+        //Recieved the intent from MainActivity and showed the corresponding text
         Intent intent=getIntent();
-        int posiiton=intent.getIntExtra("number",0);
+        int posiiton=intent.getIntExtra("position",0);
         textView=findViewById(R.id.questionTextView);
         textView.setText("Q. No. = " + posiiton + " .");
     }
