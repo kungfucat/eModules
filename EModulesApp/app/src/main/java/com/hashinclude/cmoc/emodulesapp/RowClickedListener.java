@@ -22,6 +22,19 @@ public class RowClickedListener implements RecyclerView.OnItemTouchListener {
             public boolean onSingleTapUp(MotionEvent e) {
                 return true;
             }
+
+
+            @Override
+            public void onLongPress(MotionEvent e) {
+                super.onLongPress(e);
+
+                View childView = recyclerView.findChildViewUnder(e.getX(), e.getY());
+
+                if (childView != null && clickListener != null) {
+                    clickListener.onLongItemClick(childView, recyclerView.getChildAdapterPosition(childView));
+                }
+
+            }
         });
     }
 
@@ -32,6 +45,8 @@ public class RowClickedListener implements RecyclerView.OnItemTouchListener {
             clickListener.onItemClick(childView, rv.getChildAdapterPosition(childView));
         }
         return false;
+
+
     }
 
     @Override

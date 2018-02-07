@@ -14,6 +14,7 @@ import java.util.ArrayList;
 /**
  * Created by harsh on 2/5/18.
  */
+
 //The Adapter for the RecyclerView used in MainActivity
 public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerViewAdapter.MainViewHolder> {
 
@@ -53,18 +54,23 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
         String mainText = questionNumber + ". ";
         //if the user hasn't opened the question, time taken will be NULL, given in the documentation
 
-        //If the time Taken is null, then definitely unattempted
-        //If the user opened the question and did not answer, then will show unattempted, but will update the timer in that case
-        if (TextUtils.isEmpty(timeTaken) || TextUtils.isEmpty(markedAnswer)) {
-            mainText += "Unattempted";
-        }
-
-        //FOR STATUS OF QUESTION
-        if (TextUtils.isEmpty(markedAnswer)) {
+        //FOR STATUS OF QUESTION AND MAIN TEXT
+        //if the user hasn't marked an answer, and hasn't even clicked the question(timeTaken = 0), so show unattempted sign
+        if (TextUtils.isEmpty(markedAnswer) && TextUtils.isEmpty(timeTaken)) {
             GlideApp.with(context)
                     .load(R.drawable.normal_status)
                     .into(questionStatus);
-        } else if (markedAnswer.equals(correctAnswer)) {
+            mainText += "Unattempted";
+        }
+        //if the user hasn't marked the answer and time is not null, meaning he opened the question, toh set a warning sign
+        else if (TextUtils.isEmpty(markedAnswer) && !TextUtils.isEmpty(timeTaken)) {
+            GlideApp.with(context)
+                    .load(R.drawable.warning)
+                    .into(questionStatus);
+            mainText += "Unanswered";
+        }
+        //timeWon't be null if we are are, because won't update markedAnswer without updating timer
+        else if (markedAnswer.equals(correctAnswer)) {
             GlideApp.with(context)
                     .load(R.drawable.success)
                     .into(questionStatus);

@@ -1,10 +1,13 @@
 package com.hashinclude.cmoc.emodulesapp;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by harsh on 2/7/18.
  */
 
-public class QuestionModel {
+public class QuestionModel implements Parcelable{
     private int id;
     private String query, solution, correct, topic, notes, marked, timeTaken;
     private int flagged;
@@ -12,6 +15,30 @@ public class QuestionModel {
     public QuestionModel() {
 
     }
+
+    protected QuestionModel(Parcel in) {
+        id = in.readInt();
+        query = in.readString();
+        solution = in.readString();
+        correct = in.readString();
+        topic = in.readString();
+        notes = in.readString();
+        marked = in.readString();
+        timeTaken = in.readString();
+        flagged = in.readInt();
+    }
+
+    public static final Creator<QuestionModel> CREATOR = new Creator<QuestionModel>() {
+        @Override
+        public QuestionModel createFromParcel(Parcel in) {
+            return new QuestionModel(in);
+        }
+
+        @Override
+        public QuestionModel[] newArray(int size) {
+            return new QuestionModel[size];
+        }
+    };
 
     public int getId() {
         return id;
@@ -90,5 +117,23 @@ public class QuestionModel {
 
     public void setFlagged(int flagged) {
         this.flagged = flagged;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeInt(id);
+        parcel.writeString(query);
+        parcel.writeString(solution);
+        parcel.writeString(correct);
+        parcel.writeString(topic);
+        parcel.writeString(notes);
+        parcel.writeString(marked);
+        parcel.writeString(timeTaken);
+        parcel.writeInt(flagged);
     }
 }
