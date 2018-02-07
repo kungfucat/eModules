@@ -15,60 +15,72 @@ import java.util.ArrayList;
 
 public class DatabaseAdapter {
     DatabaseHelper databaseHelper;
+    String[] allColumns = {
+            DatabaseHelper.ID,
+            DatabaseHelper.QUERY,
+            DatabaseHelper.SOLUTION,
+            DatabaseHelper.CORRECT_ANSWER,
+            DatabaseHelper.TOPIC,
+            DatabaseHelper.NOTES,
+            DatabaseHelper.MARKED,
+            DatabaseHelper.TIME_TAKEN,
+            DatabaseHelper.FLAGGED};
 
     public DatabaseAdapter(Context context) {
         databaseHelper = new DatabaseHelper(context);
     }
 
     public ArrayList<QuestionModel> getAllData() {
-        SQLiteDatabase database = databaseHelper.getWritableDatabase();
-        String[] columns = {
-                DatabaseHelper.ID,
-                DatabaseHelper.QUERY,
-                DatabaseHelper.SOLUTION,
-                DatabaseHelper.CORRECT_ANSWER,
-                DatabaseHelper.TOPIC,
-                DatabaseHelper.NOTES,
-                DatabaseHelper.MARKED,
-                DatabaseHelper.TIME_TAKEN,
-                DatabaseHelper.FLAGGED};
+        SQLiteDatabase database = databaseHelper.getReadableDatabase();
+        int id = 1;
 
-        Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, columns, null, null, null, null, DatabaseHelper.ID);
+        Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns, null, null, null, null, DatabaseHelper.ID);
 
         ArrayList<QuestionModel> questionModels = new ArrayList<>();
         while (cursor.moveToNext()) {
-
-            QuestionModel temporary = new QuestionModel();
-            int questionNumber = cursor.getInt(cursor.getColumnIndex(DatabaseHelper.ID));
-            temporary.setId(questionNumber);
-
-            String query = cursor.getString(cursor.getColumnIndex(DatabaseHelper.QUERY));
-            temporary.setQuery(query);
-
-            String solution = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SOLUTION));
-            temporary.setSolution(solution);
-
-            String correctAnswer = cursor.getString(cursor.getColumnIndex(DatabaseHelper.CORRECT_ANSWER));
-            temporary.setCorrect(correctAnswer);
-
-            String topic = cursor.getString(cursor.getColumnIndex(DatabaseHelper.TOPIC));
-            temporary.setTopic(topic);
-
-            String notes = cursor.getString(cursor.getColumnIndex(DatabaseHelper.NOTES));
-            temporary.setNotes(notes);
-
-            String marked = cursor.getString(cursor.getColumnIndex(DatabaseHelper.MARKED));
-            temporary.setMarked(marked);
-
-            String timeTaken = cursor.getString(cursor.getColumnIndex(DatabaseHelper.TIME_TAKEN));
-            temporary.setTimeTaken(timeTaken);
-
-            int flagged = cursor.getInt(cursor.getColumnIndex(DatabaseHelper.FLAGGED));
-            temporary.setFlagged(flagged);
-
-            questionModels.add(temporary);
+            questionModels.add(getDataForASingleRow(id));
+            id++;
         }
         return questionModels;
+    }
+
+    public QuestionModel getDataForASingleRow(int id) {
+        SQLiteDatabase database = databaseHelper.getReadableDatabase();
+        String[] selectionArgs = {String.valueOf(id)};
+
+        Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns, DatabaseHelper.ID + "=?", selectionArgs, null, null, null);
+
+        cursor.moveToNext();
+
+        QuestionModel temporary = new QuestionModel();
+        int questionNumber = cursor.getInt(cursor.getColumnIndex(DatabaseHelper.ID));
+        temporary.setId(questionNumber);
+
+        String query = cursor.getString(cursor.getColumnIndex(DatabaseHelper.QUERY));
+        temporary.setQuery(query);
+
+        String solution = cursor.getString(cursor.getColumnIndex(DatabaseHelper.SOLUTION));
+        temporary.setSolution(solution);
+
+        String correctAnswer = cursor.getString(cursor.getColumnIndex(DatabaseHelper.CORRECT_ANSWER));
+        temporary.setCorrect(correctAnswer);
+
+        String topic = cursor.getString(cursor.getColumnIndex(DatabaseHelper.TOPIC));
+        temporary.setTopic(topic);
+
+        String notes = cursor.getString(cursor.getColumnIndex(DatabaseHelper.NOTES));
+        temporary.setNotes(notes);
+
+        String marked = cursor.getString(cursor.getColumnIndex(DatabaseHelper.MARKED));
+        temporary.setMarked(marked);
+
+        String timeTaken = cursor.getString(cursor.getColumnIndex(DatabaseHelper.TIME_TAKEN));
+        temporary.setTimeTaken(timeTaken);
+
+        int flagged = cursor.getInt(cursor.getColumnIndex(DatabaseHelper.FLAGGED));
+        temporary.setFlagged(flagged);
+
+        return temporary;
     }
 
     public int updateFlagged(int id, int flag) {
@@ -84,7 +96,7 @@ public class DatabaseAdapter {
     }
 
     static class DatabaseHelper extends SQLiteAssetHelper {
-//      For details refer : https://github.com/utkarshmttl/eModules/tree/master/DB
+        //      For details refer : https://github.com/utkarshmttl/eModules/tree/master/DB
         Context context;
         private static final String DATABASE_NAME = "questionsdb.db";
         private static final String TABLE_NAME = "questions";

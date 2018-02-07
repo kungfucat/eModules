@@ -30,12 +30,9 @@ public class MainActivity extends AppCompatActivity {
 
         databaseAdapter = new DatabaseAdapter(this);
         questionModelArrayList = databaseAdapter.getAllData();
-        for (int i = 0; i < questionModelArrayList.size(); i++) {
-            QuestionModel model = questionModelArrayList.get(i);
-            Log.d("MODEL", model.getId() + " : " + model.getTimeTaken());
-        }
 
-        MainRecyclerViewAdapter adapter = new MainRecyclerViewAdapter(this);
+
+        MainRecyclerViewAdapter adapter = new MainRecyclerViewAdapter(this, questionModelArrayList);
         mainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mainRecyclerView.setAdapter(adapter);
         mainRecyclerView.addItemDecoration(new DividerItemDecoration(this,
@@ -45,10 +42,11 @@ public class MainActivity extends AppCompatActivity {
         mainRecyclerView.addOnItemTouchListener(new RowClickedListener(this, mainRecyclerView, new OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-//                Log.d("TAG",position+"");
+
 //                Sent the intent to SingleQuestionActivity
                 Intent intent = new Intent(context, SingleQuestionActivity.class);
-                intent.putExtra("position", position);
+                //position+1 as at index 0 we have question 1, so passing 1
+                intent.putExtra("position", position+1);
                 startActivity(intent);
             }
         }));

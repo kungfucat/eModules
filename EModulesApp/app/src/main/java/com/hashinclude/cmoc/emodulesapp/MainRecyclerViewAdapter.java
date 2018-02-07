@@ -2,11 +2,14 @@ package com.hashinclude.cmoc.emodulesapp;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.util.ArrayList;
 
 /**
  * Created by harsh on 2/5/18.
@@ -16,10 +19,12 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
 
     LayoutInflater layoutInflater;
     Context context;
+    ArrayList<QuestionModel> questionModelArrayList;
 
-    public MainRecyclerViewAdapter(Context context) {
+    public MainRecyclerViewAdapter(Context context, ArrayList<QuestionModel> questionModelArrayList) {
         this.context = context;
         layoutInflater = LayoutInflater.from(context);
+        this.questionModelArrayList = questionModelArrayList;
 
     }
 
@@ -32,37 +37,67 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
     }
 
     @Override
-    public void onBindViewHolder(MainViewHolder holder, int position) {
-//        The images added are just for demonstration purposes as of now
-//        GlideApp should be used to load images as shown below
-        holder.mainTextView.setText(position + ". Unattempted");
-        if(position%3==0){
-            GlideApp.with(context)
-                    .load(R.drawable.error)
-                    .into(holder.questionStatusImageView);
+    public void onBindViewHolder(MainViewHolder holder, final int position) {
+        TextView mainTextView = holder.mainTextView;
+        TextView timeTextView = holder.timeTextView;
+        ImageView questionStatus = holder.questionStatusImageView;
+        ImageView flaggedImageView = holder.flagStatusImageView;
+
+        int questionNumber = position + 1;
+
+        String markedAnswer = questionModelArrayList.get(position).getMarked();
+        String correctAnswer = questionModelArrayList.get(position).getCorrect();
+        int flagged = questionModelArrayList.get(position).getFlagged();
+        String timeTaken = questionModelArrayList.get(position).getTimeTaken();
+
+        String mainText = questionNumber + ". ";
+        //if the user hasn't opened the question, time taken will be NULL, given in the documentation
+
+        //If the time Taken is null, then definitely unattempted
+        //If the user opened the question and did not answer, then will show unattempted, but will update the timer in that case
+        if (TextUtils.isEmpty(timeTaken) || TextUtils.isEmpty(markedAnswer)) {
+            mainText += "Unattempted";
         }
-        else if(position%3==1){
-            GlideApp.with(context)
-                    .load(R.drawable.success)
-                    .into(holder.questionStatusImageView);
-        }
-        else {
+
+        //FOR STATUS OF QUESTION
+        if (TextUtils.isEmpty(markedAnswer)) {
             GlideApp.with(context)
                     .load(R.drawable.normal_status)
-                    .into(holder.questionStatusImageView);
+                    .into(questionStatus);
+        } else if (markedAnswer.equals(correctAnswer)) {
+            GlideApp.with(context)
+                    .load(R.drawable.success)
+                    .into(questionStatus);
+            //Time is surely not NULL, and marked answer is correct, so will show "Correct"
+            mainText += "Correct";
+        } else {
+            GlideApp.with(context)
+                    .load(R.drawable.error)
+                    .into(questionStatus);
+            //Time is surely not NULL, and marked answer is incorrect, so will show "Incorrect"
+            mainText += "Incorrect";
         }
 
-        if(position%2==0){
+//        TIME TEXT VIEW
+        if (TextUtils.isEmpty(timeTaken)) {
+            timeTextView.setText("--:--");
+        } else {
+            timeTextView.setText(timeTaken);
+        }
+
+        mainTextView.setText(mainText);
+
+
+        //FOR FLAG
+        if (flagged == 0) {
             GlideApp.with(context)
                     .load(R.drawable.unflagged)
-                    .into(holder.flagStatusImageView);
-        }
-        else {
+                    .into(flaggedImageView);
+        } else {
             GlideApp.with(context)
                     .load(R.drawable.flagged)
-                    .into(holder.flagStatusImageView);
+                    .into(flaggedImageView);
         }
-
 
         GlideApp.with(context)
                 .load(R.drawable.arrowrightcircle)
@@ -71,21 +106,21 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
 
     @Override
     public int getItemCount() {
-        return 100;
+        return questionModelArrayList.size();
     }
 
     public class MainViewHolder extends RecyclerView.ViewHolder {
-        TextView mainTextView,timeTextView;
-        ImageView questionStatusImageView, flagStatusImageView,rightArrowImageView;
+        TextView mainTextView, timeTextView;
+        ImageView questionStatusImageView, flagStatusImageView, rightArrowImageView;
 
 
         public MainViewHolder(View itemView) {
             super(itemView);
             mainTextView = itemView.findViewById(R.id.tempTextView);
-            rightArrowImageView=itemView.findViewById(R.id.rightArrow);
-            timeTextView=itemView.findViewById(R.id.timeTextView);
-            questionStatusImageView=itemView.findViewById(R.id.questionStatus);
-            flagStatusImageView=itemView.findViewById(R.id.flagQuestion);
+            rightArrowImageView = itemView.findViewById(R.id.rightArrow);
+            timeTextView = itemView.findViewById(R.id.timeTextView);
+            questionStatusImageView = itemView.findViewById(R.id.questionStatus);
+            flagStatusImageView = itemView.findViewById(R.id.flagQuestion);
         }
     }
 }
