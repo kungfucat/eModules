@@ -2,23 +2,28 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:gravity="center"
     android:orientation="horizontal"
-    android:padding="2dp">
+    android:paddingBottom="10dp"
+    android:paddingLeft="4dp"
+    android:paddingRight="4dp"
+    android:paddingTop="10dp">
 
     <ImageView
         android:id="@+id/questionStatus"
-        android:layout_width="0dp"
-        android:layout_height="50dp"
-        android:layout_margin="3dp"
-        android:layout_weight="1"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginLeft="3dp"
         android:src="@mipmap/ic_launcher_round" />
 
     <TextView
         android:id="@+id/tempTextView"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:layout_marginLeft="10dp"
+        android:paddingTop="4dp"
         android:layout_weight="1"
-        android:gravity="center"
         android:text="Hello World"
         android:textColor="#000000"
         android:textSize="16sp" />
@@ -27,7 +32,7 @@
         android:id="@+id/timeTextView"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_weight="1"
+        android:layout_marginRight="10dp"
         android:gravity="center"
         android:text="--:--"
         android:textColor="#000000"
@@ -35,20 +40,15 @@
 
     <ImageView
         android:id="@+id/flagQuestion"
-        android:layout_width="0dp"
-        android:layout_height="50dp"
-        android:layout_marginBottom="3dp"
-        android:layout_marginLeft="3dp"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginLeft="5dp"
         android:layout_marginRight="10dp"
-        android:layout_marginTop="3dp"
-        android:layout_weight="1"
         android:src="@mipmap/ic_launcher_round" />
 
     <ImageView
         android:id="@+id/rightArrow"
-        android:layout_width="0dp"
-        android:layout_height="50dp"
-        android:layout_margin="3dp"
-        android:layout_weight="1"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
         android:src="@mipmap/ic_launcher_round" />
 </LinearLayout>
