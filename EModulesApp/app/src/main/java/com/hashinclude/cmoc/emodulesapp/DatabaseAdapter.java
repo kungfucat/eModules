@@ -95,6 +95,31 @@ public class DatabaseAdapter {
         return count;
     }
 
+    public int updateMarked(int id, String marked) {
+
+        SQLiteDatabase database = databaseHelper.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DatabaseHelper.MARKED, marked);
+
+        String[] whereArgs = {String.valueOf(id)};
+        int count = database.update(DatabaseHelper.TABLE_NAME, contentValues,
+                DatabaseHelper.ID + " =?", whereArgs);
+        return count;
+    }
+
+
+    public int updateTime(int id, String timeValue) {
+
+        SQLiteDatabase database = databaseHelper.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DatabaseHelper.TIME_TAKEN, timeValue);
+
+        String[] whereArgs = {String.valueOf(id)};
+        int count = database.update(DatabaseHelper.TABLE_NAME, contentValues,
+                DatabaseHelper.ID + " =?", whereArgs);
+        return count;
+    }
+
     public int updateNotes(int id, String newNotes) {
 
         SQLiteDatabase database = databaseHelper.getWritableDatabase();

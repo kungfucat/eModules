@@ -88,8 +88,13 @@ public class MainActivity extends AppCompatActivity {
 
         if (requestCode == REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                int position = data.getIntExtra("currentPosition", 0);
+                int position = data.getIntExtra("recyclerViewPosition", 0);
+                int idOfQuestion=data.getIntExtra("idOfQuestion",1);
+                QuestionModel questionModel=databaseAdapter.getDataForASingleRow(idOfQuestion);
+                questionModelArrayList.set(position,questionModel);
+                adapter.notifyDataSetChanged();
             }
         }
     }
+
 }

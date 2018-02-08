@@ -56,7 +56,8 @@ public class SingleQuestionActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         Intent returnIntent = getIntent();
-        returnIntent.putExtra("currentPosition", position);
+        returnIntent.putExtra("recyclerViewPosition", position);
+        returnIntent.putExtra("idOfQuestion",questionModel.getId());
         setResult(Activity.RESULT_OK, returnIntent);
         finish();
     }
