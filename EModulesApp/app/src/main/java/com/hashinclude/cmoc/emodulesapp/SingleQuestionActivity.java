@@ -9,33 +9,48 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.widget.TextView;
+
+import com.ogaclejapan.smarttablayout.SmartTabLayout;
 
 //Will be used to load a single question from the db
 public class SingleQuestionActivity extends AppCompatActivity {
 
     //    WebView questionWebView;
     ViewPager questionViewPager;
+    Toolbar toolbar;
     QuestionViewPagerAdapter questionViewPagerAdapter;
     DatabaseAdapter databaseAdapter;
+    TextView toolBarTextView;
     QuestionModel questionModel;
     int position;
+    SmartTabLayout indicator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_question);
 
-        //Recieved the intent from MainActivity and showed the corresponding text
         Intent intent = getIntent();
         //position is position in arraylist
-        position = intent.getIntExtra("position", 0);
-//        Question number is actually position+1 (question start from 1 but arraylist index starts from 0
-        int questionNumber = position + 1;
+        //position and questionNumber can be any 2 values when will implement search functionality
+        position = intent.getIntExtra("positionInRecyclerView", 0);
+        questionModel = intent.getParcelableExtra("questionModel");
+
         databaseAdapter = new DatabaseAdapter(this);
-        questionModel = databaseAdapter.getDataForASingleRow(questionNumber);
+        questionModel = databaseAdapter.getDataForASingleRow(questionModel.getId());
+
         questionViewPager = findViewById(R.id.questionViewPager);
+        toolBarTextView = findViewById(R.id.toolbarTextView);
+        toolbar = findViewById(R.id.questionActivityToolbar);
+        indicator = findViewById(R.id.viewpagertab);
+
+        toolBarTextView.setText("Question " + questionModel.getId());
+
         questionViewPagerAdapter = new QuestionViewPagerAdapter(getSupportFragmentManager(), questionModel);
         questionViewPager.setAdapter(questionViewPagerAdapter);
+        indicator.setViewPager(questionViewPager);
     }
 
     @Override

@@ -95,6 +95,18 @@ public class DatabaseAdapter {
         return count;
     }
 
+    public int updateNotes(int id, String newNotes) {
+
+        SQLiteDatabase database = databaseHelper.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(DatabaseHelper.NOTES, newNotes);
+
+        String[] whereArgs = {String.valueOf(id)};
+        int count = database.update(DatabaseHelper.TABLE_NAME, contentValues,
+                DatabaseHelper.ID + " =?", whereArgs);
+        return count;
+    }
+
     static class DatabaseHelper extends SQLiteAssetHelper {
         //      For details refer : https://github.com/utkarshmttl/eModules/tree/master/DB
         Context context;

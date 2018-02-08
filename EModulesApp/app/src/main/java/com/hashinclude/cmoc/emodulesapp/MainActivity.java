@@ -1,23 +1,25 @@
 package com.hashinclude.cmoc.emodulesapp;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 
 import java.util.ArrayList;
+
+import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 
 public class MainActivity extends AppCompatActivity {
 
     //main RecyclerView will hold the data to show on the MainScreen
     RecyclerView mainRecyclerView;
+    VerticalRecyclerViewFastScroller fastScroller;
     DatabaseAdapter databaseAdapter;
     ArrayList<QuestionModel> questionModelArrayList;
     Context context;
@@ -28,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         mainRecyclerView = findViewById(R.id.mainRecyclerView);
@@ -43,6 +46,12 @@ public class MainActivity extends AppCompatActivity {
         mainRecyclerView.setAdapter(adapter);
         mainRecyclerView.addItemDecoration(new DividerItemDecoration(this,
                 DividerItemDecoration.VERTICAL));
+        fastScroller = findViewById(R.id.fast_scroller);
+        fastScroller.setRecyclerView(mainRecyclerView);
+        fastScroller.setHandleColor(Color.RED);
+        fastScroller.setBarColor(Color.BLACK);
+
+        mainRecyclerView.setOnScrollListener(fastScroller.getOnScrollListener());
 
         //Added the OnTouchListener
         mainRecyclerView.addOnItemTouchListener(new RowClickedListener(this, mainRecyclerView, new OnItemClickListener() {
@@ -51,8 +60,8 @@ public class MainActivity extends AppCompatActivity {
                 vibrator.vibrate(40);
 //                Sent the intent to SingleQuestionActivity
                 Intent intent = new Intent(context, SingleQuestionActivity.class);
-                intent.putExtra("position", position);
-                questionModelArrayList.get(position).setTimeTaken("00:00");
+                intent.putExtra("positionInRecyclerView", position);
+                intent.putExtra("questionModel", questionModelArrayList.get(position));
                 startActivityForResult(intent, REQUEST_CODE);
             }
 
@@ -63,11 +72,11 @@ public class MainActivity extends AppCompatActivity {
                 if (questionModelArrayList.get(position).getFlagged() == 0) {
                     questionModelArrayList.get(position).setFlagged(1);
                     //id is 1 index based, but position is 0 based
-                    databaseAdapter.updateFlagged(position+1,1);
+                    databaseAdapter.updateFlagged(position + 1, 1);
                 } else {
                     questionModelArrayList.get(position).setFlagged(0);
                     //id is 1 index based, but position is 0 based
-                    databaseAdapter.updateFlagged(position+1,0);
+                    databaseAdapter.updateFlagged(position + 1, 0);
                 }
                 adapter.notifyDataSetChanged();
             }
@@ -82,14 +91,5 @@ public class MainActivity extends AppCompatActivity {
                 int position = data.getIntExtra("currentPosition", 0);
             }
         }
-    }
-
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-//        this is to update for the warning sign, because if i update it just before sending the intent
-//        then it looks kind of awkward, so when we come back, onResume will be called and so doing it here
-        adapter.notifyDataSetChanged();
     }
 }

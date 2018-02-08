@@ -37,4 +37,9 @@ dependencies {
 
     //To get pre-populated db
     compile 'com.readystatesoftware.sqliteasset:sqliteassethelper:+'
+
+    compile 'com.ogaclejapan.smarttablayout:library:1.6.1@aar'
+    compile 'xyz.danoz:recyclerviewfastscroller:0.1.3'
+    compile 'com.github.ceryle:RadioRealButton:v2.1.1'
+
 }
