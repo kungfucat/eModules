@@ -36,7 +36,7 @@ public class SingleQuestionActivity extends AppCompatActivity {
     DatabaseAdapter databaseAdapter;
     TextView toolBarTextView, timerTextView;
     QuestionModel questionModel;
-    int position;
+    int position, recyclerViewSize;
     SmartTabLayout indicator;
     EventBus eventBus;
     Timer timer;
@@ -51,11 +51,8 @@ public class SingleQuestionActivity extends AppCompatActivity {
         timer = new Timer();
 
         Intent intent = getIntent();
-        //position is position in arraylist
-        //position and questionNumber can be any 2 values when will implement search functionality
         position = intent.getIntExtra("positionInRecyclerView", 0);
         questionModel = intent.getParcelableExtra("questionModel");
-
         databaseAdapter = new DatabaseAdapter(this);
         questionModel = databaseAdapter.getDataForASingleRow(questionModel.getId());
 
@@ -168,7 +165,6 @@ public class SingleQuestionActivity extends AppCompatActivity {
 
 
     class QuestionViewPagerAdapter extends FragmentPagerAdapter {
-        //        String[] tabs = {"Question", "Notes"};
         QuestionModel questionModel;
         ArrayList<String> arrayList = new ArrayList<>();
         String locked = "\uD83D\uDD12";

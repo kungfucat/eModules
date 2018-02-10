@@ -39,14 +39,13 @@ public class QuestionFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
 
         final View row = inflater.inflate(R.layout.fragment_question, container, false);
         final Bundle bundle = getArguments();
         final QuestionModel questionModel = bundle.getParcelable("questionModel");
-
 
         final DatabaseAdapter adapter = new DatabaseAdapter(getContext());
 
@@ -60,6 +59,13 @@ public class QuestionFragment extends Fragment {
 
         questionWebView.getSettings().setJavaScriptEnabled(true);
         questionWebView.loadDataWithBaseURL("", questionModel.getQuery(), "text/html", "UTF-8", "");
+        questionWebView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                return true;
+            }
+        });
+        questionWebView.setLongClickable(false);
 
         if (TextUtils.isEmpty(questionModel.getMarked())) {
             answerButtonGroup.setOnClickedButtonListener(new RadioRealButtonGroup.OnClickedButtonListener() {
