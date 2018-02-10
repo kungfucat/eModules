@@ -10,6 +10,7 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -48,8 +49,6 @@ public class MainActivity extends AppCompatActivity {
                 DividerItemDecoration.VERTICAL));
         fastScroller = findViewById(R.id.fast_scroller);
         fastScroller.setRecyclerView(mainRecyclerView);
-        fastScroller.setHandleColor(Color.RED);
-        fastScroller.setBarColor(Color.BLACK);
 
         mainRecyclerView.setOnScrollListener(fastScroller.getOnScrollListener());
 
@@ -73,10 +72,12 @@ public class MainActivity extends AppCompatActivity {
                     questionModelArrayList.get(position).setFlagged(1);
                     //id is 1 index based, but position is 0 based
                     databaseAdapter.updateFlagged(position + 1, 1);
+                    Toast.makeText(context, "Flagged Question No." + questionModelArrayList.get(position).getId(), Toast.LENGTH_SHORT).show();
                 } else {
                     questionModelArrayList.get(position).setFlagged(0);
                     //id is 1 index based, but position is 0 based
                     databaseAdapter.updateFlagged(position + 1, 0);
+                    Toast.makeText(context, "Unflagged Question No." + questionModelArrayList.get(position).getId(), Toast.LENGTH_SHORT).show();
                 }
                 adapter.notifyDataSetChanged();
             }
@@ -89,9 +90,9 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 int position = data.getIntExtra("recyclerViewPosition", 0);
-                int idOfQuestion=data.getIntExtra("idOfQuestion",1);
-                QuestionModel questionModel=databaseAdapter.getDataForASingleRow(idOfQuestion);
-                questionModelArrayList.set(position,questionModel);
+                int idOfQuestion = data.getIntExtra("idOfQuestion", 1);
+                QuestionModel questionModel = databaseAdapter.getDataForASingleRow(idOfQuestion);
+                questionModelArrayList.set(position, questionModel);
                 adapter.notifyDataSetChanged();
             }
         }

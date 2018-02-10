@@ -3,7 +3,6 @@ package com.hashinclude.cmoc.emodulesapp;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -12,6 +11,8 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.Toast;
+
+import org.greenrobot.eventbus.EventBus;
 
 import co.ceryle.radiorealbutton.RadioRealButton;
 import co.ceryle.radiorealbutton.RadioRealButtonGroup;
@@ -22,8 +23,11 @@ import co.ceryle.radiorealbutton.RadioRealButtonGroup;
  */
 public class QuestionFragment extends Fragment {
 
+    EventBus bus;
+
     public QuestionFragment() {
         // Required empty public constructor
+        bus = EventBus.getDefault();
     }
 
     public static QuestionFragment newInstance(QuestionModel questionModel) {
@@ -34,36 +38,11 @@ public class QuestionFragment extends Fragment {
         return fragment;
     }
 
-
-    public RadioRealButton[] currentChosenButton(View row, String toCheck) {
-        RadioRealButton[] correctButton = new RadioRealButton[1];
-        switch (toCheck) {
-            case "a":
-                correctButton[0] = row.findViewById(R.id.radioButtonA);
-                break;
-            case "b":
-                correctButton[0] = row.findViewById(R.id.radioButtonB);
-                break;
-
-            case "c":
-                correctButton[0] = row.findViewById(R.id.radioButtonC);
-                break;
-
-            case "d":
-                correctButton[0] = row.findViewById(R.id.radioButtonD);
-                break;
-
-            case "e":
-                correctButton[0] = row.findViewById(R.id.radioButtonE);
-                break;
-        }
-        return correctButton;
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+
         final View row = inflater.inflate(R.layout.fragment_question, container, false);
         final Bundle bundle = getArguments();
         final QuestionModel questionModel = bundle.getParcelable("questionModel");
@@ -73,15 +52,11 @@ public class QuestionFragment extends Fragment {
 
         final RadioRealButtonGroup answerButtonGroup = row.findViewById(R.id.answerRadioButtonGroup);
         WebView questionWebView = row.findViewById(R.id.questionWebView);
-        Button submitButton = row.findViewById(R.id.submitButton);
+        final Button submitButton = row.findViewById(R.id.submitButton);
         final int[] optionSelected = {-1};
         final RadioRealButton[] chosenButton = new RadioRealButton[1];
 
-        //TODO:NEED TO UPDATE THIS WITH AN ACTUAL TIMER
-        if (TextUtils.isEmpty(questionModel.getTimeTaken())) {
-            questionModel.setTimeTaken("00:00");
-            adapter.updateTime(questionModel.getId(), "00:00");
-        }
+        answerButtonGroup.setPosition(-1);
 
         questionWebView.getSettings().setJavaScriptEnabled(true);
         questionWebView.loadDataWithBaseURL("", questionModel.getQuery(), "text/html", "UTF-8", "");
@@ -126,6 +101,9 @@ public class QuestionFragment extends Fragment {
                             break;
                     }
                     answerButtonGroup.setClickable(false);
+                    Toast.makeText(getContext(), "Solution Unlocked!", Toast.LENGTH_SHORT).show();
+                    bus.post(new SubmitButtonClickedEvent(chosenAnswer));
+
                     if (chosenAnswer.equals(questionModel.getCorrect())) {
                         chosenButton[0].setBackgroundColor(Color.GREEN);
                     } else {
@@ -140,20 +118,46 @@ public class QuestionFragment extends Fragment {
         } else {
             answerButtonGroup.setClickable(false);
             submitButton.setClickable(false);
-            RadioRealButton[] buttonMarked = currentChosenButton(row, questionModel.getMarked());
-            RadioRealButton[] buttonCorrect = currentChosenButton(row, questionModel.getCorrect());
-            buttonCorrect[0].setBackgroundColor(Color.GREEN);
-            buttonMarked[0].setBackgroundColor(Color.RED);
+            if (questionModel.getMarked().equals(questionModel.getCorrect())) {
+                //correct and marked button are same, so just put green on correct
+                RadioRealButton[] buttonCorrect = currentChosenButton(row, questionModel.getCorrect());
+                buttonCorrect[0].setBackgroundColor(Color.GREEN);
+            } else {
+                //correct and incorrect are different, so marked different
+                RadioRealButton[] buttonMarked = currentChosenButton(row, questionModel.getMarked());
+                RadioRealButton[] buttonCorrect = currentChosenButton(row, questionModel.getCorrect());
+                buttonCorrect[0].setBackgroundColor(Color.GREEN);
+                buttonMarked[0].setBackgroundColor(Color.RED);
+            }
         }
 
 
         return row;
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        //had to save state to avoid a small bug
-        setRetainInstance(true);
+    public RadioRealButton[] currentChosenButton(View row, String toCheck) {
+        RadioRealButton[] correctButton = new RadioRealButton[1];
+        switch (toCheck) {
+            case "a":
+                correctButton[0] = row.findViewById(R.id.radioButtonA);
+                break;
+            case "b":
+                correctButton[0] = row.findViewById(R.id.radioButtonB);
+                break;
+
+            case "c":
+                correctButton[0] = row.findViewById(R.id.radioButtonC);
+                break;
+
+            case "d":
+                correctButton[0] = row.findViewById(R.id.radioButtonD);
+                break;
+
+            case "e":
+                correctButton[0] = row.findViewById(R.id.radioButtonE);
+                break;
+        }
+        return correctButton;
     }
+
 }
