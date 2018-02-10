@@ -10,18 +10,46 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/questionActivityToolbar"
         android:layout_width="match_parent"
-        android:layout_height="?android:attr/actionBarSize"
-        android:background="@color/colorPrimary">
+        android:layout_height="50dp"
+        android:background="@color/toolbarColor"
+        android:contentInsetEnd="0dp"
+        android:contentInsetLeft="0dp"
+        android:contentInsetRight="0dp"
+        android:contentInsetStart="0dp"
+        android:paddingLeft="15dp"
+        app:contentInsetEnd="0dp"
+        app:contentInsetLeft="0dp"
+        app:contentInsetRight="0dp"
+        app:contentInsetStart="0dp">
 
-
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
-            android:text="Hello World"
-            android:id="@+id/toolbarTextView"
-            android:textColor="#ffffff"
-            android:textSize="18sp" />
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/toolbarTextView"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@color/toolbarColor"
+                android:gravity="left"
+                android:text="Hello World"
+                android:textColor="#ffffff"
+                android:textSize="22sp" />
+
+            <TextView
+                android:id="@+id/toolbarTimerTextView"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="right"
+                android:background="@color/toolbarColor"
+                android:text="00:00"
+                android:layout_marginRight="10dp"
+                android:textColor="#ffffff"
+                android:textSize="22sp" />
+        </LinearLayout>
 
     </android.support.v7.widget.Toolbar>
 
@@ -29,15 +57,16 @@
         android:id="@+id/viewpagertab"
         android:layout_width="match_parent"
         android:layout_height="40dp"
+        android:background="@color/toolbarColor"
         app:stl_clickable="true"
         app:stl_defaultTabTextAllCaps="true"
-        app:stl_defaultTabTextColor="#FC000000"
+        app:stl_defaultTabTextColor="#ffffff"
         app:stl_defaultTabTextHorizontalPadding="16dp"
         app:stl_defaultTabTextSize="12sp"
         app:stl_distributeEvenly="true"
         app:stl_dividerColor="#4D000000"
         app:stl_dividerThickness="1dp"
-        app:stl_indicatorColor="@android:color/holo_red_light"
+        app:stl_indicatorColor="@color/lightBlue"
         app:stl_indicatorCornerRadius="2dp"
         app:stl_indicatorGravity="bottom"
         app:stl_indicatorInterpolation="smart"
