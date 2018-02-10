@@ -42,11 +42,11 @@
                 android:id="@+id/toolbarTimerTextView"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="right"
-                android:background="@color/toolbarColor"
-                android:text="00:00"
                 android:layout_marginRight="10dp"
+                android:layout_weight="1"
+                android:background="@color/toolbarColor"
+                android:gravity="right"
+                android:text="00:00"
                 android:textColor="#ffffff"
                 android:textSize="22sp" />
         </LinearLayout>
@@ -58,6 +58,7 @@
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:background="@color/toolbarColor"
+        android:elevation="8dp"
         app:stl_clickable="true"
         app:stl_defaultTabTextAllCaps="true"
         app:stl_defaultTabTextColor="#ffffff"

@@ -2,14 +2,15 @@ package com.hashinclude.cmoc.emodulesapp;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -28,6 +29,9 @@ public class MainActivity extends AppCompatActivity {
     Vibrator vibrator;
     public static int REQUEST_CODE = 100;
 
+    TextView correctTextView, incorrectTextView, unattemptedTextView;
+    int countCorrect, countIncorrect, countUnattempted;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +45,9 @@ public class MainActivity extends AppCompatActivity {
         databaseAdapter = new DatabaseAdapter(this);
         questionModelArrayList = databaseAdapter.getAllData();
 
+        correctTextView = findViewById(R.id.numberOfCorrect);
+        incorrectTextView = findViewById(R.id.numberOfIncorrect);
+        unattemptedTextView = findViewById(R.id.numberOfUnattempted);
 
         adapter = new MainRecyclerViewAdapter(this, questionModelArrayList);
         mainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -49,6 +56,25 @@ public class MainActivity extends AppCompatActivity {
                 DividerItemDecoration.VERTICAL));
         fastScroller = findViewById(R.id.fast_scroller);
         fastScroller.setRecyclerView(mainRecyclerView);
+
+
+        countCorrect = 0;
+        countIncorrect = 0;
+        countUnattempted = 0;
+        for (int i = 0; i < questionModelArrayList.size(); i++) {
+            if (TextUtils.isEmpty(questionModelArrayList.get(i).getMarked())) {
+                countUnattempted++;
+            } else if (questionModelArrayList.get(i).getMarked().equals(questionModelArrayList.get(i).getCorrect())) {
+                countCorrect++;
+            } else {
+                countIncorrect++;
+            }
+        }
+
+        correctTextView.setText(String.format("%03d", countCorrect));
+        incorrectTextView.setText(String.format("%03d", countIncorrect));
+        unattemptedTextView.setText(String.format("%03d", countUnattempted));
+
 
         mainRecyclerView.setOnScrollListener(fastScroller.getOnScrollListener());
 
@@ -93,6 +119,18 @@ public class MainActivity extends AppCompatActivity {
                 int idOfQuestion = data.getIntExtra("idOfQuestion", 1);
                 QuestionModel questionModel = databaseAdapter.getDataForASingleRow(idOfQuestion);
                 questionModelArrayList.set(position, questionModel);
+                if (questionModel.getMarked() != null) {
+                    if (questionModel.getMarked() == questionModel.getCorrect()) {
+                        countUnattempted--;
+                        countCorrect++;
+                    } else {
+                        countUnattempted--;
+                        countIncorrect++;
+                    }
+                }
+                correctTextView.setText(String.format("%03d", countCorrect));
+                incorrectTextView.setText(String.format("%03d", countIncorrect));
+                unattemptedTextView.setText(String.format("%03d", countUnattempted));
                 adapter.notifyDataSetChanged();
             }
         }
