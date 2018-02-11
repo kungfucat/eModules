@@ -35,7 +35,7 @@
                 android:contentInsetRight="0dp"
                 android:contentInsetStart="0dp"
                 android:elevation="8dp"
-                android:paddingLeft="15dp"
+                android:paddingLeft="10dp"
                 app:contentInsetEnd="0dp"
                 app:contentInsetLeft="0dp"
                 app:contentInsetRight="0dp"
@@ -78,31 +78,42 @@
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:layout_gravity="center_vertical"
-                        android:layout_marginLeft="5dp"
-                        android:layout_marginRight="10dp"
+                        android:layout_marginRight="3dp"
                         android:src="@drawable/ic_back_arrow" />
 
                     <EditText
                         android:id="@+id/searchStringEditText"
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="match_parent"
+                        android:layout_weight="1"
                         android:imeOptions="actionSearch"
                         android:inputType="text"
                         android:maxLines="1"
                         android:textColor="@color/white" />
+
+                    <TextView
+                        android:id="@+id/searchTextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="10dp"
+                        android:text="Search"
+                        android:textColor="@color/white"
+                        android:textSize="18sp" />
+
                 </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/afterSearchToolBar"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"
+                    android:visibility="gone">
 
                     <ImageView
                         android:id="@+id/afterSearchToolBarBackArrow"
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:layout_gravity="center_vertical"
-                        android:layout_marginLeft="5dp"
                         android:layout_marginRight="10dp"
                         android:src="@drawable/ic_back_arrow" />
 
@@ -111,11 +122,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
+                        android:ellipsize="end"
                         android:gravity="center_vertical"
                         android:maxLines="1"
                         android:textColor="@color/white"
                         android:textSize="22sp" />
-
                 </LinearLayout>
             </android.support.v7.widget.Toolbar>
 
@@ -137,7 +148,24 @@
             android:layout_marginTop="40dp"
             app:rfs_barColor="@android:color/black"
             app:rfs_handleColor="@color/toolbarColor" />
+
+        <FrameLayout
+            android:id="@+id/rootListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="68dp"
+            android:layout_marginTop="50dp"
+            android:background="@color/white"
+            android:visibility="gone">
+
+            <ListView
+                android:id="@+id/listView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:elevation="5dp" />
+        </FrameLayout>
     </FrameLayout>
+
 
     <!-- SLIDING LAYOUT -->
     <LinearLayout
