@@ -9,7 +9,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -71,6 +70,14 @@ public class SolutionFragment extends Fragment {
         solutionTextView = row.findViewById(R.id.solutionTextView);
         notSolutionLinearLayout = row.findViewById(R.id.rootWhenSolutionNotVisible);
         solutionWebView.getSettings().setJavaScriptEnabled(true);
+        solutionWebView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                return true;
+            }
+        });
+        solutionWebView.setLongClickable(false);
+
 
         if (TextUtils.isEmpty(questionModel.getMarked())) {
             notSolutionLinearLayout.setVisibility(View.VISIBLE);

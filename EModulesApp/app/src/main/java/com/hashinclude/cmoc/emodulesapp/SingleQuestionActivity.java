@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -13,7 +14,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.ogaclejapan.smarttablayout.SmartTabLayout;
@@ -29,16 +32,18 @@ import java.util.TimerTask;
 //Will be used to load a single question from the db
 public class SingleQuestionActivity extends AppCompatActivity {
 
-    //    WebView questionWebView;
     ViewPager questionViewPager;
     Toolbar toolbar;
     QuestionViewPagerAdapter questionViewPagerAdapter;
     DatabaseAdapter databaseAdapter;
     TextView toolBarTextView, timerTextView;
     QuestionModel questionModel;
-    int position, recyclerViewSize;
+    int position;
+    ImageView flagQuestionToolbarImageView, backArrowIcon;
     SmartTabLayout indicator;
+    Vibrator vibrator;
     EventBus eventBus;
+    Context context;
     Timer timer;
 
     @Override
@@ -49,6 +54,8 @@ public class SingleQuestionActivity extends AppCompatActivity {
         eventBus = EventBus.getDefault();
         eventBus.register(this);
         timer = new Timer();
+        context = this;
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         Intent intent = getIntent();
         position = intent.getIntExtra("positionInRecyclerView", 0);
@@ -61,6 +68,16 @@ public class SingleQuestionActivity extends AppCompatActivity {
         toolbar = findViewById(R.id.questionActivityToolbar);
         timerTextView = findViewById(R.id.toolbarTimerTextView);
         indicator = findViewById(R.id.viewpagertab);
+        flagQuestionToolbarImageView = findViewById(R.id.flagQuestionTooolbar);
+        backArrowIcon = findViewById(R.id.backArrowIcon);
+
+        backArrowIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                vibrator.vibrate(30);
+                onBackPressed();
+            }
+        });
 
         toolBarTextView.setText("Question " + questionModel.getId());
 
@@ -69,6 +86,36 @@ public class SingleQuestionActivity extends AppCompatActivity {
         questionViewPager.setAdapter(questionViewPagerAdapter);
         indicator.setViewPager(questionViewPager);
         questionViewPager.setCurrentItem(1);
+
+
+        if (questionModel.getFlagged() == 0) {
+            GlideApp.with(this)
+                    .load(R.drawable.flag_white_border)
+                    .into(flagQuestionToolbarImageView);
+        } else {
+            GlideApp.with(this)
+                    .load(R.drawable.flagged_white_border)
+                    .into(flagQuestionToolbarImageView);
+        }
+        flagQuestionToolbarImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                vibrator.vibrate(70);
+                if (questionModel.getFlagged() == 0) {
+                    GlideApp.with(context)
+                            .load(R.drawable.flagged_white_border)
+                            .into((ImageView) view);
+                    questionModel.setFlagged(1);
+                    databaseAdapter.updateFlagged(questionModel.getId(), 1);
+                } else {
+                    GlideApp.with(context)
+                            .load(R.drawable.flag_white_border)
+                            .into((ImageView) view);
+                    questionModel.setFlagged(0);
+                    databaseAdapter.updateFlagged(questionModel.getId(), 0);
+                }
+            }
+        });
 
         questionViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -111,6 +158,8 @@ public class SingleQuestionActivity extends AppCompatActivity {
                     int minutes = currentTimeInSeconds[0] / 60;
                     int seconds = currentTimeInSeconds[0] % 60;
                     if (minutes >= 100) {
+                        databaseAdapter.updateTime(questionModel.getId(), "99:59");
+                        updateTextView("99", "59");
                         this.cancel();
                     }
                     String min = String.valueOf(minutes), sec = String.valueOf(seconds);

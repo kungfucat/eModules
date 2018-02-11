@@ -2,6 +2,7 @@ package com.hashinclude.cmoc.emodulesapp;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
@@ -9,11 +10,20 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+
 import java.util.ArrayList;
+import java.util.List;
 
 import xyz.danoz.recyclerviewfastscroller.vertical.VerticalRecyclerViewFastScroller;
 
@@ -28,14 +38,17 @@ public class MainActivity extends AppCompatActivity {
     MainRecyclerViewAdapter adapter;
     Vibrator vibrator;
     public static int REQUEST_CODE = 100;
+    SlidingUpPanelLayout slidingUpPanelLayout;
 
     TextView correctTextView, incorrectTextView, unattemptedTextView;
     int countCorrect, countIncorrect, countUnattempted;
 
+    //    FOR CHARTS :
+    BarChart barChart;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
 
         mainRecyclerView = findViewById(R.id.mainRecyclerView);
@@ -48,7 +61,23 @@ public class MainActivity extends AppCompatActivity {
         correctTextView = findViewById(R.id.numberOfCorrect);
         incorrectTextView = findViewById(R.id.numberOfIncorrect);
         unattemptedTextView = findViewById(R.id.numberOfUnattempted);
+        slidingUpPanelLayout=findViewById(R.id.sliding_layout);
+        slidingUpPanelLayout.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
+            @Override
+            public void onPanelSlide(View panel, float slideOffset) {
 
+            }
+
+            @Override
+            public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
+                barChart.animateY(2000);
+                barChart.invalidate();
+
+            }
+        });
+
+//        FOR CHARTS
+        barChart = findViewById(R.id.barChart);
         adapter = new MainRecyclerViewAdapter(this, questionModelArrayList);
         mainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mainRecyclerView.setAdapter(adapter);
@@ -57,11 +86,11 @@ public class MainActivity extends AppCompatActivity {
         fastScroller = findViewById(R.id.fast_scroller);
         fastScroller.setRecyclerView(mainRecyclerView);
 
-
         countCorrect = 0;
         countIncorrect = 0;
         countUnattempted = 0;
         for (int i = 0; i < questionModelArrayList.size(); i++) {
+            Log.d("TOPIC", questionModelArrayList.get(i).getTopic());
             if (TextUtils.isEmpty(questionModelArrayList.get(i).getMarked())) {
                 countUnattempted++;
             } else if (questionModelArrayList.get(i).getMarked().equals(questionModelArrayList.get(i).getCorrect())) {
@@ -82,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
         mainRecyclerView.addOnItemTouchListener(new RowClickedListener(this, mainRecyclerView, new OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                vibrator.vibrate(40);
+                vibrator.vibrate(30);
 //                Sent the intent to SingleQuestionActivity
                 Intent intent = new Intent(context, SingleQuestionActivity.class);
                 intent.putExtra("positionInRecyclerView", position);
@@ -108,6 +137,15 @@ public class MainActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         }));
+
+        setUpCharts();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        barChart.animateY(2000);
+        barChart.invalidate();
     }
 
     @Override
@@ -136,4 +174,38 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void setUpCharts() {
+
+        List<BarEntry> entries = new ArrayList<>();
+
+        entries.add(new BarEntry(0f, 10f));
+        entries.add(new BarEntry(1f, 80f));
+        entries.add(new BarEntry(2f, 60f));
+        entries.add(new BarEntry(3f, 50f));
+        // gap of 2f
+        entries.add(new BarEntry(5f, 70f));
+        entries.add(new BarEntry(6f, 60f));
+
+        BarDataSet set = new BarDataSet(entries, "Number of Questions");
+
+
+        BarData data = new BarData(set);
+        data.setBarWidth(0.9f); // set custom bar width
+        barChart.setData(data);
+        barChart.setFitBars(true); // make the x-axis fit exactly all bars
+
+
+        Legend l = barChart.getLegend();
+        l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
+        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
+        l.setOrientation(Legend.LegendOrientation.HORIZONTAL);
+        l.setDrawInside(false);
+        l.setForm(Legend.LegendForm.SQUARE);
+        l.setFormSize(9f);
+        l.setTextSize(11f);
+        l.setXEntrySpace(4f);
+        barChart.getDescription().setEnabled(false);
+        barChart.animateY(2000);
+        barChart.invalidate();
+    }
 }
