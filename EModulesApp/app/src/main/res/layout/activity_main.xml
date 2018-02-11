@@ -41,15 +41,82 @@
                 app:contentInsetRight="0dp"
                 app:contentInsetStart="0dp">
 
-                <TextView
-                    android:id="@+id/toolbarTextView"
+                <LinearLayout
+                    android:id="@+id/normalToolbar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:text="@string/app_name"
-                    android:textColor="#ffffff"
-                    android:textSize="22sp" />
+                    android:visibility="visible">
 
+                    <TextView
+                        android:id="@+id/toolbarTextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        android:text="@string/app_name"
+                        android:textColor="#ffffff"
+                        android:textSize="22sp" />
+
+                    <ImageView
+                        android:id="@+id/searchIconImageView"
+                        android:layout_width="25dp"
+                        android:layout_height="25dp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginRight="15dp"
+                        android:src="@drawable/search_glass" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/searchToolbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:id="@+id/searcToolbarBackArrow"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="10dp"
+                        android:src="@drawable/ic_back_arrow" />
+
+                    <EditText
+                        android:id="@+id/searchStringEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:textColor="@color/white" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/afterSearchToolBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:id="@+id/afterSearchToolBarBackArrow"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="10dp"
+                        android:src="@drawable/ic_back_arrow" />
+
+                    <TextView
+                        android:id="@+id/afterSearchTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        android:maxLines="1"
+                        android:textColor="@color/white"
+                        android:textSize="22sp" />
+
+                </LinearLayout>
             </android.support.v7.widget.Toolbar>
 
             <!--Added a single RecyclerView in the MainActivity-->
@@ -179,8 +246,8 @@
             android:layout_weight="1">
 
             <com.github.mikephil.charting.charts.BarChart
-                android:layout_width="match_parent"
                 android:id="@+id/barChart"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
             </com.github.mikephil.charting.charts.BarChart>

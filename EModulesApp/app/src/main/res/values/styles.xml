@@ -15,6 +15,6 @@
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/toolbarColor</item>
         <item name="colorPrimaryDark">@color/toolbarColor</item>
-        <item name="colorAccent">@color/lightBlue</item>
+        <item name="colorAccent">@color/white</item>
     </style>
 </resources>

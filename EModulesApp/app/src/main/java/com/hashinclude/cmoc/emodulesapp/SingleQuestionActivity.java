@@ -209,6 +209,10 @@ public class SingleQuestionActivity extends AppCompatActivity {
         returnIntent.putExtra("idOfQuestion", questionModel.getId());
         setResult(Activity.RESULT_OK, returnIntent);
         timer.cancel();
+
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(questionViewPager.getApplicationWindowToken(), 0);
+
         finish();
     }
 

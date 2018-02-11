@@ -45,13 +45,11 @@ public class NotesFragment extends Fragment {
             notesEditText.setHint("Type notes here");
         } else {
             notesEditText.setText(notes);
-            notesEditText.setCursorVisible(false);
         }
         notesEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 //                Log.d("TEXTCHANGE", "Before Called");
-                notesEditText.setCursorVisible(true);
             }
 
             @Override

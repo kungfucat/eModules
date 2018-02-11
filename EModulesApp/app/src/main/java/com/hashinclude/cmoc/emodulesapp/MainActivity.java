@@ -10,8 +10,13 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +48,15 @@ public class MainActivity extends AppCompatActivity {
     TextView correctTextView, incorrectTextView, unattemptedTextView;
     int countCorrect, countIncorrect, countUnattempted;
 
+    LinearLayout normalToolbar, dragView, searchView;
+    EditText searchStringEditText;
+    ImageView searchIconImageView, searchToolbarBackArrow;
+
+    LinearLayout afterSearchToolbar;
+    ImageView afterSearchBackArrow;
+    String textSearchedFor;
+    TextView afterSearchTextView;
+
     //    FOR CHARTS :
     BarChart barChart;
 
@@ -61,7 +75,19 @@ public class MainActivity extends AppCompatActivity {
         correctTextView = findViewById(R.id.numberOfCorrect);
         incorrectTextView = findViewById(R.id.numberOfIncorrect);
         unattemptedTextView = findViewById(R.id.numberOfUnattempted);
-        slidingUpPanelLayout=findViewById(R.id.sliding_layout);
+        slidingUpPanelLayout = findViewById(R.id.sliding_layout);
+        searchIconImageView = findViewById(R.id.searchIconImageView);
+        normalToolbar = findViewById(R.id.normalToolbar);
+        dragView = findViewById(R.id.dragView);
+        searchView = findViewById(R.id.searchToolbar);
+        searchToolbarBackArrow = findViewById(R.id.searcToolbarBackArrow);
+        searchStringEditText = findViewById(R.id.searchStringEditText);
+
+        afterSearchToolbar = findViewById(R.id.afterSearchToolBar);
+        afterSearchBackArrow = findViewById(R.id.afterSearchToolBarBackArrow);
+        afterSearchTextView = findViewById(R.id.afterSearchTextView);
+
+
         slidingUpPanelLayout.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
             @Override
             public void onPanelSlide(View panel, float slideOffset) {
@@ -70,11 +96,22 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
-                barChart.animateY(2000);
-                barChart.invalidate();
+                if (previousState == SlidingUpPanelLayout.PanelState.EXPANDED) {
 
+                } else if (previousState == SlidingUpPanelLayout.PanelState.COLLAPSED) {
+                    barChart.animateY(2000);
+                    barChart.invalidate();
+                }
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(panel.getApplicationWindowToken(), 0);
+
+                normalToolbar.setVisibility(View.VISIBLE);
+                searchView.setVisibility(View.GONE);
+                imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(searchView.getApplicationWindowToken(), 0);
             }
         });
+
 
 //        FOR CHARTS
         barChart = findViewById(R.id.barChart);
@@ -90,7 +127,6 @@ public class MainActivity extends AppCompatActivity {
         countIncorrect = 0;
         countUnattempted = 0;
         for (int i = 0; i < questionModelArrayList.size(); i++) {
-            Log.d("TOPIC", questionModelArrayList.get(i).getTopic());
             if (TextUtils.isEmpty(questionModelArrayList.get(i).getMarked())) {
                 countUnattempted++;
             } else if (questionModelArrayList.get(i).getMarked().equals(questionModelArrayList.get(i).getCorrect())) {
@@ -138,7 +174,104 @@ public class MainActivity extends AppCompatActivity {
             }
         }));
 
+
+        setUpSearchBar();
         setUpCharts();
+        setUpAfterSearchBar();
+    }
+
+    public void setUpAfterSearchBar() {
+        afterSearchTextView.setText(textSearchedFor);
+        afterSearchBackArrow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                vibrator.vibrate(30);
+                normalToolbar.setVisibility(View.VISIBLE);
+                searchView.setVisibility(View.GONE);
+                afterSearchToolbar.setVisibility(View.GONE);
+                ArrayList<QuestionModel> questionModels = databaseAdapter.getAllData();
+                questionModelArrayList = questionModels;
+                adapter.updateList(questionModels);
+            }
+        });
+    }
+
+    public void setUpSearchBar() {
+
+        searchToolbarBackArrow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                normalToolbar.setVisibility(View.VISIBLE);
+                afterSearchToolbar.setVisibility(View.GONE);
+                searchView.setVisibility(View.GONE);
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
+
+                vibrator.vibrate(30);
+            }
+        });
+
+        searchIconImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                normalToolbar.setVisibility(View.GONE);
+                searchView.setVisibility(View.VISIBLE);
+                vibrator.vibrate(30);
+            }
+        });
+
+        searchStringEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    try {
+                        textSearchedFor = v.getText().toString();
+                        String stringToSearch = textSearchedFor.toLowerCase();
+                        ArrayList<QuestionModel> questionModels = databaseAdapter.getAllData(stringToSearch);
+                        questionModelArrayList = questionModels;
+                        adapter.updateList(questionModels);
+//                        Log.d("VIEW", questionModels.size() + "");
+                    } catch (Exception e) {
+                        //We get an exception when nothing matches. So better to handle it here
+//                        Log.d("VIEW", "Caught Exception");
+
+                    } finally {
+                        normalToolbar.setVisibility(View.GONE);
+                        searchView.setVisibility(View.GONE);
+
+                        //Update text view when making it visible
+                        afterSearchToolbar.setVisibility(View.VISIBLE);
+                        afterSearchTextView.setText(textSearchedFor);
+
+                        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(searchView.getApplicationWindowToken(), 0);
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
+
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (searchView.getVisibility() == View.VISIBLE) {
+            normalToolbar.setVisibility(View.VISIBLE);
+            searchView.setVisibility(View.GONE);
+            afterSearchToolbar.setVisibility(View.GONE);
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(searchView.getApplicationWindowToken(), 0);
+        } else if (afterSearchToolbar.getVisibility() == View.VISIBLE) {
+            normalToolbar.setVisibility(View.VISIBLE);
+            searchView.setVisibility(View.GONE);
+            afterSearchToolbar.setVisibility(View.GONE);
+            ArrayList<QuestionModel> questionModels = databaseAdapter.getAllData();
+            questionModelArrayList = questionModels;
+            adapter.updateList(questionModels);
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
@@ -146,6 +279,14 @@ public class MainActivity extends AppCompatActivity {
         super.onConfigurationChanged(newConfig);
         barChart.animateY(2000);
         barChart.invalidate();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(mainRecyclerView.getApplicationWindowToken(), 0);
+
     }
 
     @Override

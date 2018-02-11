@@ -52,6 +52,33 @@ public class DatabaseAdapter {
 
         cursor.moveToNext();
 
+        QuestionModel temporary = getQuestionModelFromCursor(cursor);
+        return temporary;
+    }
+
+    public ArrayList<QuestionModel> getAllData(String toMatch) {
+        SQLiteDatabase database = databaseHelper.getReadableDatabase();
+        int id = 1;
+
+        Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns,
+                DatabaseHelper.QUERY + " LIKE '%" + toMatch + "%' OR " +
+                        DatabaseHelper.SOLUTION + " LIKE '%" + toMatch + "%' OR " +
+                        DatabaseHelper.ID + " LIKE '%" + toMatch + "%' OR " +
+                        DatabaseHelper.NOTES + " LIKE '%" + toMatch + "%'"
+                , null,
+                null, null,
+                DatabaseHelper.ID);
+
+        ArrayList<QuestionModel> questionModels = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            questionModels.add(getQuestionModelFromCursor(cursor));
+            id++;
+        }
+        return questionModels;
+
+    }
+
+    public QuestionModel getQuestionModelFromCursor(Cursor cursor) {
         QuestionModel temporary = new QuestionModel();
         int questionNumber = cursor.getInt(cursor.getColumnIndex(DatabaseHelper.ID));
         temporary.setId(questionNumber);
@@ -81,6 +108,7 @@ public class DatabaseAdapter {
         temporary.setFlagged(flagged);
 
         return temporary;
+
     }
 
     public int updateFlagged(int id, int flag) {

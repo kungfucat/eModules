@@ -54,7 +54,7 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
         int flagged = questionModelArrayList.get(position).getFlagged();
         String timeTaken = questionModelArrayList.get(position).getTimeTaken();
 
-        String mainText = questionNumber + ". ";
+        String mainText = questionModelArrayList.get(position).getId() + ". ";
         //if the user hasn't opened the question, time taken will be NULL, given in the documentation
 
         //FOR STATUS OF QUESTION AND MAIN TEXT
@@ -110,6 +110,10 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
         GlideApp.with(context)
                 .load(R.drawable.arrowrightcircle)
                 .into(holder.rightArrowImageView);
+    }
+    public void updateList(ArrayList<QuestionModel> arrayList){
+        this.questionModelArrayList=arrayList;
+        notifyDataSetChanged();
     }
 
     @Override
