@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
@@ -52,11 +53,15 @@ public class QuestionFragment extends Fragment {
         final RadioRealButtonGroup answerButtonGroup = row.findViewById(R.id.answerRadioButtonGroup);
         WebView questionWebView = row.findViewById(R.id.questionWebView);
         final Button submitButton = row.findViewById(R.id.submitButton);
+        TextView topicTextView = row.findViewById(R.id.topicOfQuestionTextView);
+
         final int[] optionSelected = {-1};
         final RadioRealButton[] chosenButton = new RadioRealButton[1];
 
         answerButtonGroup.setPosition(-1);
 
+
+        topicTextView.setText("Topic : " + questionModel.getTopic());
         questionWebView.getSettings().setJavaScriptEnabled(true);
         questionWebView.loadDataWithBaseURL("", questionModel.getQuery(), "text/html", "UTF-8", "");
         questionWebView.setOnLongClickListener(new View.OnLongClickListener() {

@@ -52,6 +52,118 @@ public class DatabaseAdapter {
 
         cursor.moveToNext();
 
+        QuestionModel temporary = getQuestionModelFromCursor(cursor);
+        return temporary;
+    }
+
+    public ArrayList<QuestionModel> getAllData(String toMatch) {
+        SQLiteDatabase database = databaseHelper.getReadableDatabase();
+        int id = 1;
+
+        Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns,
+                DatabaseHelper.QUERY + " LIKE '%" + toMatch + "%' OR " +
+                        DatabaseHelper.SOLUTION + " LIKE '%" + toMatch + "%' OR " +
+                        DatabaseHelper.ID + " LIKE '%" + toMatch + "%' OR " +
+                        DatabaseHelper.NOTES + " LIKE '%" + toMatch + "%'"
+                , null,
+                null, null,
+                DatabaseHelper.ID);
+
+        ArrayList<QuestionModel> questionModels = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            questionModels.add(getQuestionModelFromCursor(cursor));
+            id++;
+        }
+        return questionModels;
+
+    }
+
+    public ArrayList<QuestionModel> getAllFlagged() {
+        SQLiteDatabase database = databaseHelper.getReadableDatabase();
+        int id = 1;
+
+        Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns,
+                DatabaseHelper.FLAGGED + " =1"
+                , null,
+                null, null,
+                DatabaseHelper.ID);
+
+        ArrayList<QuestionModel> questionModels = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            questionModels.add(getQuestionModelFromCursor(cursor));
+            id++;
+        }
+        return questionModels;
+    }
+
+    public ArrayList<QuestionModel> getAllUnattempted() {
+        SQLiteDatabase database = databaseHelper.getReadableDatabase();
+        Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns,
+                DatabaseHelper.MARKED + " IS NULL"
+                , null,
+                null, null,
+                DatabaseHelper.ID);
+
+        ArrayList<QuestionModel> questionModels = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            questionModels.add(getQuestionModelFromCursor(cursor));
+        }
+        return questionModels;
+    }
+
+    public ArrayList<QuestionModel> getAllCorrect() {
+        SQLiteDatabase database = databaseHelper.getReadableDatabase();
+        Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns,
+                DatabaseHelper.MARKED + " IS NOT NULL"
+                , null,
+                null, null,
+                DatabaseHelper.ID);
+
+        ArrayList<QuestionModel> questionModels = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            QuestionModel questionModel = getQuestionModelFromCursor(cursor);
+            if (questionModel.getMarked().equals(questionModel.getCorrect())) {
+                questionModels.add(getQuestionModelFromCursor(cursor));
+            }
+        }
+        return questionModels;
+    }
+
+    public ArrayList<QuestionModel> getAllInCorrect() {
+        SQLiteDatabase database = databaseHelper.getReadableDatabase();
+        Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns,
+                DatabaseHelper.MARKED + " IS NOT NULL"
+                , null,
+                null, null,
+                DatabaseHelper.ID);
+
+        ArrayList<QuestionModel> questionModels = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            QuestionModel questionModel = getQuestionModelFromCursor(cursor);
+            if (!questionModel.getMarked().equals(questionModel.getCorrect())) {
+                questionModels.add(getQuestionModelFromCursor(cursor));
+            }
+        }
+        return questionModels;
+    }
+
+    public ArrayList<QuestionModel> getFromTopic(String topicName) {
+        SQLiteDatabase database = databaseHelper.getReadableDatabase();
+        String[] selectionArgs = {topicName};
+        Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns,
+                DatabaseHelper.TOPIC + " =?"
+                , selectionArgs,
+                null, null,
+                DatabaseHelper.ID);
+
+        ArrayList<QuestionModel> questionModels = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            questionModels.add(getQuestionModelFromCursor(cursor));
+        }
+        return questionModels;
+    }
+
+    public QuestionModel getQuestionModelFromCursor(Cursor cursor) {
         QuestionModel temporary = new QuestionModel();
         int questionNumber = cursor.getInt(cursor.getColumnIndex(DatabaseHelper.ID));
         temporary.setId(questionNumber);
@@ -81,6 +193,7 @@ public class DatabaseAdapter {
         temporary.setFlagged(flagged);
 
         return temporary;
+
     }
 
     public int updateFlagged(int id, int flag) {

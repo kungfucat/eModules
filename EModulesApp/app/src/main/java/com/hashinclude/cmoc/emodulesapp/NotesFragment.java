@@ -37,9 +37,9 @@ public class NotesFragment extends Fragment {
         // Inflate the layout for this fragment
         View row = inflater.inflate(R.layout.fragment_notes, container, false);
         Bundle bundle = getArguments();
-        final DatabaseAdapter databaseAdapter=new DatabaseAdapter(getContext());
+        final DatabaseAdapter databaseAdapter = new DatabaseAdapter(getContext());
         final QuestionModel questionModel = bundle.getParcelable("questionModel");
-        EditText notesEditText = row.findViewById(R.id.notesEditText);
+        final EditText notesEditText = row.findViewById(R.id.notesEditText);
         String notes = questionModel.getNotes();
         if (TextUtils.isEmpty(notes)) {
             notesEditText.setHint("Type notes here");
@@ -61,7 +61,7 @@ public class NotesFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable editable) {
                 String newText = editable.toString();
-                databaseAdapter.updateNotes(questionModel.getId(),newText);
+                databaseAdapter.updateNotes(questionModel.getId(), newText);
             }
         });
         return row;
