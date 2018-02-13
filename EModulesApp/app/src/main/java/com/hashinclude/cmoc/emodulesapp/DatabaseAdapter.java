@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
+import android.widget.Toast;
 
 import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
 
@@ -27,8 +28,11 @@ public class DatabaseAdapter {
             DatabaseHelper.TIME_TAKEN,
             DatabaseHelper.FLAGGED};
 
+    Context context;
+
     public DatabaseAdapter(Context context) {
         databaseHelper = new DatabaseHelper(context);
+        this.context = context;
     }
 
     public ArrayList<QuestionModel> getAllData() {
@@ -117,62 +121,76 @@ public class DatabaseAdapter {
 
     public ArrayList<QuestionModel> getAllMatching(String textToSearch, int[] optionSelected) {
         SQLiteDatabase database = databaseHelper.getReadableDatabase();
-        Cursor cursor;
         String flagStatement = "";
         String correctStatement = "";
         String incorrectStatement = "";
-        String unattempted = "";
+        String unattemptedStatement = "";
         String topicsSelection = "";
+
         if (optionSelected[0] == 1) {
-            flagStatement = " AND " + DatabaseHelper.FLAGGED + " =1";
+            flagStatement += " AND " + DatabaseHelper.FLAGGED + " =1";
         }
         if (optionSelected[1] == 1) {
-            correctStatement = " AND " + DatabaseHelper.MARKED + " IS NOT NULL AND " + DatabaseHelper.MARKED + "=" + DatabaseHelper.CORRECT_ANSWER;
+            correctStatement += " AND " + DatabaseHelper.MARKED + " IS NOT NULL AND " + DatabaseHelper.MARKED + "=" + DatabaseHelper.CORRECT_ANSWER;
         }
         if (optionSelected[2] == 1) {
-            incorrectStatement = " AND " + DatabaseHelper.MARKED + " IS NOT NULL AND " + DatabaseHelper.MARKED + "!=" + DatabaseHelper.CORRECT_ANSWER;
+            incorrectStatement += " AND " + DatabaseHelper.MARKED + " IS NOT NULL AND " + DatabaseHelper.MARKED + "!=" + DatabaseHelper.CORRECT_ANSWER;
         }
         if (optionSelected[3] == 1) {
-            unattempted = " AND " + DatabaseHelper.MARKED + " IS NULL ";
+            unattemptedStatement += " AND " + DatabaseHelper.MARKED + " IS NULL ";
         }
         if (optionSelected[4] == 1) {
-            topicsSelection = " AND " + DatabaseHelper.TOPIC + " LIKE " + "'%Solving' ";
+            topicsSelection += " AND " + DatabaseHelper.TOPIC + " LIKE " + "'%Solving' ";
         }
         if (optionSelected[5] == 1) {
-            topicsSelection = " AND " + DatabaseHelper.TOPIC + " LIKE" + "'%Sufficiency' ";
+            topicsSelection += " AND " + DatabaseHelper.TOPIC + " LIKE " + "'%Sufficiency' ";
         }
         if (optionSelected[6] == 1) {
-            topicsSelection = " AND " + DatabaseHelper.TOPIC + " LIKE '%Comprehension' ";
+            topicsSelection += " AND " + DatabaseHelper.TOPIC + " LIKE " + "'%Comprehension' ";
         }
         if (optionSelected[7] == 1) {
-            topicsSelection = " AND " + DatabaseHelper.TOPIC + " LIKE '%Reasoning' ";
+            topicsSelection += " AND " + DatabaseHelper.TOPIC + " LIKE " + "'%Reasoning' ";
         }
         if (optionSelected[8] == 1) {
-            topicsSelection = " AND " + DatabaseHelper.TOPIC + " LIKE '%Correction' ";
+            topicsSelection += " AND " + DatabaseHelper.TOPIC + " LIKE " + "'%Correction' ";
         }
+
+        if ((!TextUtils.isEmpty(unattemptedStatement) && !TextUtils.isEmpty(correctStatement)) ||
+                (!TextUtils.isEmpty(incorrectStatement) && !TextUtils.isEmpty(correctStatement)) ||
+                (!TextUtils.isEmpty(unattemptedStatement) && !TextUtils.isEmpty(incorrectStatement))) {
+            Toast.makeText(context, "0 Results Found", Toast.LENGTH_SHORT).show();
+            return new ArrayList<>();
+        }
+
+        ArrayList<QuestionModel> questionModels = new ArrayList<>();
         if (!TextUtils.isEmpty(textToSearch)) {
-            cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns,
+            Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns,
                     DatabaseHelper.QUERY + " LIKE '%" + textToSearch + "%' OR " +
                             DatabaseHelper.SOLUTION + " LIKE '%" + textToSearch + "%' OR " +
                             DatabaseHelper.ID + " LIKE '%" + textToSearch + "%' OR " +
                             DatabaseHelper.NOTES + " LIKE '%" + textToSearch + "%' " +
-                            flagStatement + correctStatement + incorrectStatement + unattempted + topicsSelection
+                            flagStatement + correctStatement + incorrectStatement + unattemptedStatement + topicsSelection
                     , null,
                     null, null,
                     DatabaseHelper.ID);
+
+            while (cursor.moveToNext()) {
+                questionModels.add(getQuestionModelFromCursor(cursor));
+            }
+            return questionModels;
         } else {
-            cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns,
+            Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns,
                     DatabaseHelper.ID + " LIKE '%' " +
-                            flagStatement + correctStatement + incorrectStatement + unattempted + topicsSelection
+                            flagStatement + correctStatement + incorrectStatement + unattemptedStatement + topicsSelection
                     , null,
                     null, null,
                     DatabaseHelper.ID);
+
+            while (cursor.moveToNext()) {
+                questionModels.add(getQuestionModelFromCursor(cursor));
+            }
+            return questionModels;
         }
-        ArrayList<QuestionModel> questionModels = new ArrayList<>();
-        while (cursor.moveToNext()) {
-            questionModels.add(getQuestionModelFromCursor(cursor));
-        }
-        return questionModels;
     }
 
     public ArrayList<QuestionModel> getAllCorrect() {

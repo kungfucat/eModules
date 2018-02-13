@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     Vibrator vibrator;
     public static int REQUEST_CODE = 100;
     public ArrayList<String> arrayList;
+    TopicListViewAdapter topicListViewAdapter;
     SlidingUpPanelLayout slidingUpPanelLayout;
 
     TextView correctTextView, incorrectTextView, unattemptedTextView;
@@ -95,8 +96,7 @@ public class MainActivity extends AppCompatActivity {
         arrayList.add("Verbal Critical Reasoning");
         arrayList.add("Verbal Sentence Correction");
 
-
-        databaseAdapter = new DatabaseAdapter(this);
+        databaseAdapter = new DatabaseAdapter(context);
         questionModelArrayList = databaseAdapter.getAllData();
 
         correctTextView = findViewById(R.id.numberOfCorrect);
@@ -118,6 +118,9 @@ public class MainActivity extends AppCompatActivity {
         afterSearchBackArrow = findViewById(R.id.afterSearchToolBarBackArrow);
         afterSearchTextView = findViewById(R.id.afterSearchTextView);
 
+
+        topicListViewAdapter = new TopicListViewAdapter();
+        topicsListView.setAdapter(topicListViewAdapter);
 
         slidingUpPanelLayout.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
             @Override
@@ -241,7 +244,6 @@ public class MainActivity extends AppCompatActivity {
                 vibrator.vibrate(40);
             }
         });
-        topicsListView.setAdapter(new TopicListViewAdapter());
 
         topicsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -302,6 +304,11 @@ public class MainActivity extends AppCompatActivity {
                     rootListViewForSearch.setVisibility(View.GONE);
                     afterSearchToolbar.setVisibility(View.VISIBLE);
                     afterSearchTextView.setText(questionModelArrayList.size() + " Result(s)");
+                    for (int i = 0; i < 10; i++) {
+                        optionSelected[i] = 0;
+                    }
+                    topicListViewAdapter = new TopicListViewAdapter();
+                    topicsListView.setAdapter(topicListViewAdapter);
 
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(searchView.getApplicationWindowToken(), 0);
@@ -338,7 +345,10 @@ public class MainActivity extends AppCompatActivity {
                         rootListViewForSearch.setVisibility(View.GONE);
                         afterSearchToolbar.setVisibility(View.VISIBLE);
                         afterSearchTextView.setText(questionModelArrayList.size() + " Result(s)");
-
+                        for (int i = 0; i < 10; i++) {
+                            optionSelected[i] = 0;
+                        }
+                        databaseAdapter = new DatabaseAdapter(context);
                         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(searchView.getApplicationWindowToken(), 0);
                     }
@@ -476,6 +486,9 @@ public class MainActivity extends AppCompatActivity {
         public View getView(int i, View view, ViewGroup viewGroup) {
             View row = getLayoutInflater().inflate(R.layout.list_custom_row, null);
             TextView textView = row.findViewById(R.id.textViewTopic);
+            ImageView imageView = row.findViewById(R.id.checkIconImageView);
+
+            imageView.setVisibility(View.INVISIBLE);
             textView.setText(arrayList.get(i));
             return row;
         }
