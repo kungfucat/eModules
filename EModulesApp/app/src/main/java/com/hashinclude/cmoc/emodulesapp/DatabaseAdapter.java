@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.text.TextUtils;
 
 import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
 
@@ -59,6 +60,10 @@ public class DatabaseAdapter {
     public ArrayList<QuestionModel> getAllData(String toMatch) {
         SQLiteDatabase database = databaseHelper.getReadableDatabase();
         int id = 1;
+        ArrayList<QuestionModel> questionModels = new ArrayList<>();
+        if (toMatch == null) {
+            return questionModels;
+        }
 
         Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns,
                 DatabaseHelper.QUERY + " LIKE '%" + toMatch + "%' OR " +
@@ -69,7 +74,6 @@ public class DatabaseAdapter {
                 null, null,
                 DatabaseHelper.ID);
 
-        ArrayList<QuestionModel> questionModels = new ArrayList<>();
         while (cursor.moveToNext()) {
             questionModels.add(getQuestionModelFromCursor(cursor));
             id++;
@@ -104,6 +108,66 @@ public class DatabaseAdapter {
                 null, null,
                 DatabaseHelper.ID);
 
+        ArrayList<QuestionModel> questionModels = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            questionModels.add(getQuestionModelFromCursor(cursor));
+        }
+        return questionModels;
+    }
+
+    public ArrayList<QuestionModel> getAllMatching(String textToSearch, int[] optionSelected) {
+        SQLiteDatabase database = databaseHelper.getReadableDatabase();
+        Cursor cursor;
+        String flagStatement = "";
+        String correctStatement = "";
+        String incorrectStatement = "";
+        String unattempted = "";
+        String topicsSelection = "";
+        if (optionSelected[0] == 1) {
+            flagStatement = " AND " + DatabaseHelper.FLAGGED + " =1";
+        }
+        if (optionSelected[1] == 1) {
+            correctStatement = " AND " + DatabaseHelper.MARKED + " IS NOT NULL AND " + DatabaseHelper.MARKED + "=" + DatabaseHelper.CORRECT_ANSWER;
+        }
+        if (optionSelected[2] == 1) {
+            incorrectStatement = " AND " + DatabaseHelper.MARKED + " IS NOT NULL AND " + DatabaseHelper.MARKED + "!=" + DatabaseHelper.CORRECT_ANSWER;
+        }
+        if (optionSelected[3] == 1) {
+            unattempted = " AND " + DatabaseHelper.MARKED + " IS NULL ";
+        }
+        if (optionSelected[4] == 1) {
+            topicsSelection = " AND " + DatabaseHelper.TOPIC + " LIKE " + "'%Solving' ";
+        }
+        if (optionSelected[5] == 1) {
+            topicsSelection = " AND " + DatabaseHelper.TOPIC + " LIKE" + "'%Sufficiency' ";
+        }
+        if (optionSelected[6] == 1) {
+            topicsSelection = " AND " + DatabaseHelper.TOPIC + " LIKE '%Comprehension' ";
+        }
+        if (optionSelected[7] == 1) {
+            topicsSelection = " AND " + DatabaseHelper.TOPIC + " LIKE '%Reasoning' ";
+        }
+        if (optionSelected[8] == 1) {
+            topicsSelection = " AND " + DatabaseHelper.TOPIC + " LIKE '%Correction' ";
+        }
+        if (!TextUtils.isEmpty(textToSearch)) {
+            cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns,
+                    DatabaseHelper.QUERY + " LIKE '%" + textToSearch + "%' OR " +
+                            DatabaseHelper.SOLUTION + " LIKE '%" + textToSearch + "%' OR " +
+                            DatabaseHelper.ID + " LIKE '%" + textToSearch + "%' OR " +
+                            DatabaseHelper.NOTES + " LIKE '%" + textToSearch + "%' " +
+                            flagStatement + correctStatement + incorrectStatement + unattempted + topicsSelection
+                    , null,
+                    null, null,
+                    DatabaseHelper.ID);
+        } else {
+            cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns,
+                    DatabaseHelper.ID + " LIKE '%' " +
+                            flagStatement + correctStatement + incorrectStatement + unattempted + topicsSelection
+                    , null,
+                    null, null,
+                    DatabaseHelper.ID);
+        }
         ArrayList<QuestionModel> questionModels = new ArrayList<>();
         while (cursor.moveToNext()) {
             questionModels.add(getQuestionModelFromCursor(cursor));

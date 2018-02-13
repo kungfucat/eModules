@@ -1,7 +1,6 @@
 package com.hashinclude.cmoc.emodulesapp;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -10,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 
 import java.util.ArrayList;
 
@@ -111,8 +109,9 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
                 .load(R.drawable.arrowrightcircle)
                 .into(holder.rightArrowImageView);
     }
-    public void updateList(ArrayList<QuestionModel> arrayList){
-        this.questionModelArrayList=arrayList;
+
+    public void updateList(ArrayList<QuestionModel> arrayList) {
+        this.questionModelArrayList = arrayList;
         notifyDataSetChanged();
     }
 
@@ -126,7 +125,6 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
         ImageView questionStatusImageView, flagStatusImageView, rightArrowImageView;
         LinearLayout rootOfCustomRow;
 
-
         public MainViewHolder(View itemView) {
             super(itemView);
             mainTextView = itemView.findViewById(R.id.tempTextView);
@@ -134,7 +132,7 @@ public class MainRecyclerViewAdapter extends RecyclerView.Adapter<MainRecyclerVi
             timeTextView = itemView.findViewById(R.id.timeTextView);
             questionStatusImageView = itemView.findViewById(R.id.questionStatus);
             flagStatusImageView = itemView.findViewById(R.id.flagQuestion);
-            rootOfCustomRow=itemView.findViewById(R.id.rootCustomRow);
+            rootOfCustomRow = itemView.findViewById(R.id.rootCustomRow);
         }
     }
 }
