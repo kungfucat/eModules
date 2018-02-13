@@ -348,7 +348,9 @@ public class MainActivity extends AppCompatActivity {
                         for (int i = 0; i < 10; i++) {
                             optionSelected[i] = 0;
                         }
-                        databaseAdapter = new DatabaseAdapter(context);
+                        topicListViewAdapter = new TopicListViewAdapter();
+                        topicsListView.setAdapter(topicListViewAdapter);
+
                         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(searchView.getApplicationWindowToken(), 0);
                     }

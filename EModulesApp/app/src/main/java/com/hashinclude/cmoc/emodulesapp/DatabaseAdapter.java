@@ -5,7 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.text.TextUtils;
-import android.widget.Toast;
 
 import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
 
@@ -158,7 +157,6 @@ public class DatabaseAdapter {
         if ((!TextUtils.isEmpty(unattemptedStatement) && !TextUtils.isEmpty(correctStatement)) ||
                 (!TextUtils.isEmpty(incorrectStatement) && !TextUtils.isEmpty(correctStatement)) ||
                 (!TextUtils.isEmpty(unattemptedStatement) && !TextUtils.isEmpty(incorrectStatement))) {
-            Toast.makeText(context, "0 Results Found", Toast.LENGTH_SHORT).show();
             return new ArrayList<>();
         }
 
