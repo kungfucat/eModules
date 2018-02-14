@@ -260,7 +260,7 @@
                     android:layout_height="match_parent"
                     android:layout_gravity="bottom"
                     android:gravity="center"
-                    android:text="Unattempted"
+                    android:text="Unmarked"
                     android:textColor="#000000"
                     android:textSize="15sp" />
             </LinearLayout>
@@ -277,8 +277,16 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
                 android:layout_marginRight="5dp"
-                android:layout_marginTop="70dp"
+                android:layout_marginTop="10dp"
                 android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:text="Overal Distribution: "
+                    android:textColor="#000000"
+                    android:textSize="16sp" />
 
                 <com.github.mikephil.charting.charts.PieChart
                     android:id="@+id/pieChart"
@@ -286,23 +294,118 @@
                     android:layout_height="400dp"
                     android:layout_marginBottom="20dp" />
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:text="Topicwise Distribution:"
+                    android:textColor="#000000"
+                    android:textSize="16sp" />
 
                 <com.github.mikephil.charting.charts.BarChart
                     android:id="@+id/stackedBarChart"
                     android:layout_width="match_parent"
-                    android:layout_marginBottom="100dp"
                     android:layout_height="500dp">
 
                 </com.github.mikephil.charting.charts.BarChart>
 
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp"
+                    android:text="QPS: Quant Problem Solving"
+                    android:textColor="#000000"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp"
+                    android:text="QDS: Quant Data Sufficiency"
+                    android:textColor="#000000"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp"
+                    android:text="VRC: Verbal Reading Comprehension"
+                    android:textColor="#000000"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp"
+                    android:text="VCR: Verbal Critical Reasioning"
+                    android:textColor="#000000"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp"
+                    android:text="VSC: Verbal Sentence Correction"
+                    android:textColor="#000000"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="50dp"
+                    android:text="Average time taken per topic:"
+                    android:textColor="#000000"
+                    android:textSize="16sp" />
 
                 <com.github.mikephil.charting.charts.BarChart
                     android:id="@+id/barChart"
                     android:layout_width="match_parent"
-                    android:layout_marginBottom="100dp"
-                    android:layout_height="500dp">
+                    android:layout_height="500dp"
+                    android:layout_marginTop="20dp">
 
                 </com.github.mikephil.charting.charts.BarChart>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp"
+                    android:text="QPS: Quant Problem Solving"
+                    android:textColor="#000000"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp"
+                    android:text="QDS: Quant Data Sufficiency"
+                    android:textColor="#000000"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp"
+                    android:text="VRC: Verbal Reading Comprehension"
+                    android:textColor="#000000"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp"
+                    android:text="VCR: Verbal Critical Reasioning"
+                    android:textColor="#000000"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="50dp"
+                    android:layout_marginLeft="2dp"
+                    android:layout_marginTop="2dp"
+                    android:text="VSC: Verbal Sentence Correction"
+                    android:textColor="#000000"
+                    android:textSize="12sp" />
 
             </LinearLayout>
         </ScrollView>

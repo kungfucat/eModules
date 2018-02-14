@@ -30,15 +30,17 @@ import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
-import com.github.mikephil.charting.utils.ColorTemplate;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelSlideListener;
 
@@ -100,11 +102,11 @@ public class MainActivity extends AppCompatActivity {
         arrayList.add("Correct Questions");
         arrayList.add("Incorrect Questions");
         arrayList.add("Unattempted Questions");
-        arrayList.add("Quant Problem Solving");
-        arrayList.add("Quant Data Sufficiency");
-        arrayList.add("Verbal Reading Comprehension");
-        arrayList.add("Verbal Critical Reasoning");
-        arrayList.add("Verbal Sentence Correction");
+        arrayList.add("Quant Problem Solving (QPS)");
+        arrayList.add("Quant Data Sufficiency (QDS)");
+        arrayList.add("Verbal Reading Comprehension (VRC)");
+        arrayList.add("Verbal Critical Reasoning (VCR)");
+        arrayList.add("Verbal Sentence Correction (VSC)");
 
         databaseAdapter = new DatabaseAdapter(context);
         questionModelArrayList = databaseAdapter.getAllData();
@@ -154,10 +156,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
                 if (previousState == SlidingUpPanelLayout.PanelState.COLLAPSED) {
-                    barChart.animateY(1500);
-                    barChart.invalidate();
                     pieChart.animateY(1500);
                     pieChart.invalidate();
+                    stackedBarChart.animateY(2000);
+                    stackedBarChart.invalidate();
+                    barChart.animateY(2500);
+                    barChart.invalidate();
                 }
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(panel.getApplicationWindowToken(), 0);
@@ -457,43 +461,19 @@ public class MainActivity extends AppCompatActivity {
                 incorrectTextView.setText(String.format("%03d", countIncorrect));
                 unattemptedTextView.setText(String.format("%03d", countUnattempted));
                 adapter.notifyDataSetChanged();
+                setUpCharts();
             }
         }
     }
 
     public void setUpCharts() {
+        int[] colorArray = {
+                Color.parseColor("#26C6DA"),
+                Color.parseColor("#FFF176"),
+                Color.parseColor("#FF7043"),
+                Color.parseColor("#9CCC65")};
 
-        List<BarEntry> entries = new ArrayList<>();
-
-        entries.add(new BarEntry(0f, 10f));
-        entries.add(new BarEntry(1f, 80f));
-        entries.add(new BarEntry(2f, 60f));
-        entries.add(new BarEntry(3f, 50f));
-        // gap of 2f
-        entries.add(new BarEntry(5f, 70f));
-        entries.add(new BarEntry(6f, 60f));
-
-        BarDataSet set = new BarDataSet(entries, "Number of Questions");
-
-
-        BarData data = new BarData(set);
-        data.setBarWidth(0.9f); // set custom bar width
-        barChart.setData(data);
-        barChart.setFitBars(true); // make the x-axis fit exactly all bars
-
-        Legend l = barChart.getLegend();
-        l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
-        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
-        l.setOrientation(Legend.LegendOrientation.HORIZONTAL);
-        l.setDrawInside(false);
-        l.setForm(Legend.LegendForm.SQUARE);
-        l.setFormSize(9f);
-        l.setTextSize(11f);
-        l.setXEntrySpace(4f);
-        barChart.getDescription().setEnabled(false);
-        barChart.animateY(1500);
-        barChart.invalidate();
-
+//        PIE CHART
         List<PieEntry> pieEntries = new ArrayList<>();
 
         float cor = 0, incor = 0, unatt = 0, unans = 0;
@@ -510,19 +490,15 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        pieEntries.add(new PieEntry(cor, "Correct"));
-        pieEntries.add(new PieEntry(incor, "Incorrect"));
-        pieEntries.add(new PieEntry(unans, "Unanswered"));
         pieEntries.add(new PieEntry(unatt, "Unattempted"));
+        pieEntries.add(new PieEntry(unans, "Unanswered"));
+        pieEntries.add(new PieEntry(incor, "Incorrect"));
+        pieEntries.add(new PieEntry(cor, "Correct"));
 
         PieDataSet pieDataSet = new PieDataSet(pieEntries, "");
         pieDataSet.setXValuePosition(null);
         pieDataSet.setValueTextSize(10f);
-        pieDataSet.setColors(new int[]{
-                Color.parseColor("#9CCC65"),
-                Color.parseColor("#FF7043"),
-                Color.parseColor("#FFF176"),
-                Color.parseColor("#26C6DA")});
+        pieDataSet.setColors(colorArray);
 
         PieData pieData = new PieData(pieDataSet);
         pieChart.setEntryLabelColor(Color.WHITE);
@@ -530,39 +506,109 @@ public class MainActivity extends AppCompatActivity {
         pieChart.setData(pieData);
         pieChart.getDescription().setEnabled(false);
         pieChart.setDrawHoleEnabled(false);
-        pieChart.invalidate(); // refresh
+        pieChart.invalidate();
 
+//        STACKED BAR CHART
+        ArrayList<BarEntry> stackedBarEntry = new ArrayList<>();
 
-        ArrayList<BarEntry> stackedBarEntry = new ArrayList<BarEntry>();
-
-        for (int i = 0; i < 4; i++) {
-            float mult = (4 + 1);
-            float val1 = (float) (Math.random() * mult) + mult / 3;
-            float val2 = (float) (Math.random() * mult) + mult / 3;
-            float val3 = (float) (Math.random() * mult) + mult / 3;
+        for (int i = 0; i < 5; i++) {
+            float[] status = databaseAdapter.getFromTopic(i);
 
             stackedBarEntry.add(new BarEntry(
-                    i,
-                    new float[]{val1, val2, val3}));
+                    i, status));
         }
 
         BarDataSet set1;
 
-        set1 = new BarDataSet(stackedBarEntry, "Statistics Vienna 2014");
+        set1 = new BarDataSet(stackedBarEntry, "");
         set1.setDrawIcons(false);
-        set1.setColors(ColorTemplate.MATERIAL_COLORS);
-        set1.setStackLabels(new String[]{"QPS", "QDS", "VRC", "VCR", "VSC"});
+        set1.setColors(colorArray);
+        set1.setStackLabels(new String[]{"Unattempted", "Unanswered", "Incorrect", "Correct"});
 
         ArrayList<IBarDataSet> dataSets = new ArrayList<IBarDataSet>();
         dataSets.add(set1);
 
         BarData stackedBarData = new BarData(dataSets);
-        stackedBarData.setValueTextColor(Color.WHITE);
+        stackedBarData.setValueTextColor(Color.BLACK);
 
         stackedBarChart.setData(stackedBarData);
         stackedBarChart.getDescription().setEnabled(false);
         stackedBarChart.setFitBars(true);
+
         stackedBarChart.invalidate();
+        XAxis stackerBarChartXAxis = stackedBarChart.getXAxis();
+        stackerBarChartXAxis.setValueFormatter(new IAxisValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                int v = (int) value;
+                if (v == 0) {
+                    return "QPS";
+                }
+                if (v == 1) {
+                    return "QDS";
+                }
+                if (v == 2) {
+                    return "VRC";
+                }
+                if (v == 3) {
+                    return "VCR";
+                }
+                if (v == 4) {
+                    return "VSC";
+                }
+                return "";
+            }
+        });
+
+//        BAR CHART
+
+        List<BarEntry> barEntries = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            barEntries.add(new BarEntry((float) i, databaseAdapter.averageTimeTaken(i)));
+        }
+
+        BarDataSet set = new BarDataSet(barEntries, "Average time per topic (sec.)");
+        BarData data = new BarData(set);
+        data.setBarWidth(0.9f); // set custom bar width
+        barChart.setData(data);
+        barChart.setFitBars(true); // make the x-axis fit exactly all bars
+
+        Legend l = barChart.getLegend();
+        l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
+        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
+        l.setOrientation(Legend.LegendOrientation.HORIZONTAL);
+        l.setDrawInside(false);
+        l.setForm(Legend.LegendForm.SQUARE);
+        l.setFormSize(9f);
+        l.setTextSize(11f);
+        l.setXEntrySpace(4f);
+        barChart.getDescription().setEnabled(false);
+
+        XAxis xAxis = barChart.getXAxis();
+        xAxis.setValueFormatter(new IAxisValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                int v = (int) value;
+                if (v == 0) {
+                    return "QPS";
+                }
+                if (v == 1) {
+                    return "QDS";
+                }
+                if (v == 2) {
+                    return "VRC";
+                }
+                if (v == 3) {
+                    return "VCR";
+                }
+                if (v == 4) {
+                    return "VSC";
+                }
+                return "";
+            }
+        });
+        barChart.invalidate();
     }
 
     public ArrayList<QuestionModel> getDataForCurrentSearch() {
