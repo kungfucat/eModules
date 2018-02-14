@@ -3,6 +3,7 @@ package com.hashinclude.cmoc.emodulesapp;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
@@ -28,11 +29,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
+import com.github.mikephil.charting.utils.ColorTemplate;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelSlideListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +80,8 @@ public class MainActivity extends AppCompatActivity {
     TextView afterSearchTextView;
 
     //    FOR CHARTS :
-    BarChart barChart;
+    BarChart barChart, stackedBarChart;
+    PieChart pieChart;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,6 +130,10 @@ public class MainActivity extends AppCompatActivity {
 
 //        FOR CHARTS
         barChart = findViewById(R.id.barChart);
+        pieChart = findViewById(R.id.pieChart);
+        stackedBarChart = findViewById(R.id.stackedBarChart);
+
+
         topicListViewAdapter = new TopicListViewAdapter();
         topicsListView.setAdapter(topicListViewAdapter);
 
@@ -132,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        slidingUpPanelLayout.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
+        slidingUpPanelLayout.addPanelSlideListener(new PanelSlideListener() {
             @Override
             public void onPanelSlide(View panel, float slideOffset) {
 
@@ -143,6 +156,8 @@ public class MainActivity extends AppCompatActivity {
                 if (previousState == SlidingUpPanelLayout.PanelState.COLLAPSED) {
                     barChart.animateY(1500);
                     barChart.invalidate();
+                    pieChart.animateY(1500);
+                    pieChart.invalidate();
                 }
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(panel.getApplicationWindowToken(), 0);
@@ -465,7 +480,7 @@ public class MainActivity extends AppCompatActivity {
         data.setBarWidth(0.9f); // set custom bar width
         barChart.setData(data);
         barChart.setFitBars(true); // make the x-axis fit exactly all bars
-        
+
         Legend l = barChart.getLegend();
         l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
         l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
@@ -478,6 +493,76 @@ public class MainActivity extends AppCompatActivity {
         barChart.getDescription().setEnabled(false);
         barChart.animateY(1500);
         barChart.invalidate();
+
+        List<PieEntry> pieEntries = new ArrayList<>();
+
+        float cor = 0, incor = 0, unatt = 0, unans = 0;
+        ArrayList<QuestionModel> temp = databaseAdapter.getAllData();
+        for (int i = 0; i < temp.size(); i++) {
+            if (TextUtils.isEmpty(temp.get(i).getMarked()) && TextUtils.isEmpty(temp.get(i).getTimeTaken())) {
+                unatt++;
+            } else if (TextUtils.isEmpty(temp.get(i).getMarked()) && !TextUtils.isEmpty(temp.get(i).getTimeTaken())) {
+                unans++;
+            } else if (!TextUtils.isEmpty(temp.get(i).getMarked()) && temp.get(i).getMarked().equals(temp.get(i).getCorrect())) {
+                cor++;
+            } else {
+                incor++;
+            }
+        }
+
+        pieEntries.add(new PieEntry(cor, "Correct"));
+        pieEntries.add(new PieEntry(incor, "Incorrect"));
+        pieEntries.add(new PieEntry(unans, "Unanswered"));
+        pieEntries.add(new PieEntry(unatt, "Unattempted"));
+
+        PieDataSet pieDataSet = new PieDataSet(pieEntries, "");
+        pieDataSet.setXValuePosition(null);
+        pieDataSet.setValueTextSize(10f);
+        pieDataSet.setColors(new int[]{
+                Color.parseColor("#9CCC65"),
+                Color.parseColor("#FF7043"),
+                Color.parseColor("#FFF176"),
+                Color.parseColor("#26C6DA")});
+
+        PieData pieData = new PieData(pieDataSet);
+        pieChart.setEntryLabelColor(Color.WHITE);
+
+        pieChart.setData(pieData);
+        pieChart.getDescription().setEnabled(false);
+        pieChart.setDrawHoleEnabled(false);
+        pieChart.invalidate(); // refresh
+
+
+        ArrayList<BarEntry> stackedBarEntry = new ArrayList<BarEntry>();
+
+        for (int i = 0; i < 4; i++) {
+            float mult = (4 + 1);
+            float val1 = (float) (Math.random() * mult) + mult / 3;
+            float val2 = (float) (Math.random() * mult) + mult / 3;
+            float val3 = (float) (Math.random() * mult) + mult / 3;
+
+            stackedBarEntry.add(new BarEntry(
+                    i,
+                    new float[]{val1, val2, val3}));
+        }
+
+        BarDataSet set1;
+
+        set1 = new BarDataSet(stackedBarEntry, "Statistics Vienna 2014");
+        set1.setDrawIcons(false);
+        set1.setColors(ColorTemplate.MATERIAL_COLORS);
+        set1.setStackLabels(new String[]{"QPS", "QDS", "VRC", "VCR", "VSC"});
+
+        ArrayList<IBarDataSet> dataSets = new ArrayList<IBarDataSet>();
+        dataSets.add(set1);
+
+        BarData stackedBarData = new BarData(dataSets);
+        stackedBarData.setValueTextColor(Color.WHITE);
+
+        stackedBarChart.setData(stackedBarData);
+        stackedBarChart.getDescription().setEnabled(false);
+        stackedBarChart.setFitBars(true);
+        stackedBarChart.invalidate();
     }
 
     public ArrayList<QuestionModel> getDataForCurrentSearch() {
