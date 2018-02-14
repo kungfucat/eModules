@@ -12,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -118,9 +119,18 @@ public class MainActivity extends AppCompatActivity {
         afterSearchBackArrow = findViewById(R.id.afterSearchToolBarBackArrow);
         afterSearchTextView = findViewById(R.id.afterSearchTextView);
 
-
+//        FOR CHARTS
+        barChart = findViewById(R.id.barChart);
         topicListViewAdapter = new TopicListViewAdapter();
         topicsListView.setAdapter(topicListViewAdapter);
+
+        //HANDLE THE CLICK JUST OUTSIDE LISTVIEW TO AVOID OPENING OF QUESTION UNKNOWINGLY
+        rootListViewForSearch.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                return true;
+            }
+        });
 
         slidingUpPanelLayout.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
             @Override
@@ -134,19 +144,12 @@ public class MainActivity extends AppCompatActivity {
                     barChart.animateY(1500);
                     barChart.invalidate();
                 }
-                if (previousState == SlidingUpPanelLayout.PanelState.EXPANDED) {
-                    normalToolbar.setVisibility(View.VISIBLE);
-                    searchView.setVisibility(View.GONE);
-                    rootListViewForSearch.setVisibility(View.GONE);
-                }
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(panel.getApplicationWindowToken(), 0);
             }
         });
 
 
-//        FOR CHARTS
-        barChart = findViewById(R.id.barChart);
         adapter = new MainRecyclerViewAdapter(this, questionModelArrayList);
         mainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mainRecyclerView.setAdapter(adapter);
@@ -213,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setUpAfterSearchBar() {
-        afterSearchTextView.setText(questionModelArrayList.size() + " Results");
+        afterSearchTextView.setText(questionModelArrayList.size() + " Result(s)");
         afterSearchBackArrow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -238,6 +241,13 @@ public class MainActivity extends AppCompatActivity {
                 afterSearchToolbar.setVisibility(View.GONE);
                 searchView.setVisibility(View.GONE);
                 rootListViewForSearch.setVisibility(View.GONE);
+
+                for (int i = 0; i < 10; i++) {
+                    optionSelected[i] = 0;
+                }
+                topicListViewAdapter = new TopicListViewAdapter();
+                topicsListView.setAdapter(topicListViewAdapter);
+
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
 
@@ -284,6 +294,7 @@ public class MainActivity extends AppCompatActivity {
                     if (!TextUtils.isEmpty(temp)) {
                         String toSearch = temp.toLowerCase();
                         textSearchedFor = toSearch;
+                        somethingSelected = true;
                     }
                     for (int i = 0; i < 10; i++) {
                         if (optionSelected[i] == 1) {
@@ -304,11 +315,6 @@ public class MainActivity extends AppCompatActivity {
                     rootListViewForSearch.setVisibility(View.GONE);
                     afterSearchToolbar.setVisibility(View.VISIBLE);
                     afterSearchTextView.setText(questionModelArrayList.size() + " Result(s)");
-                    for (int i = 0; i < 10; i++) {
-                        optionSelected[i] = 0;
-                    }
-                    topicListViewAdapter = new TopicListViewAdapter();
-                    topicsListView.setAdapter(topicListViewAdapter);
 
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(searchView.getApplicationWindowToken(), 0);
@@ -334,7 +340,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         ArrayList<QuestionModel> questionModels = getDataForCurrentSearch();
                         questionModelArrayList = questionModels;
-                        adapter.updateList(questionModels);
+                        adapter.updateList(questionModelArrayList);
                     } catch (Exception e) {
                         Log.d("EXCEPTION", e.toString());
 
@@ -362,6 +368,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
     @Override
     public void onBackPressed() {
         if (searchView.getVisibility() == View.VISIBLE) {
@@ -369,6 +376,13 @@ public class MainActivity extends AppCompatActivity {
             searchView.setVisibility(View.GONE);
             rootListViewForSearch.setVisibility(View.GONE);
             afterSearchToolbar.setVisibility(View.GONE);
+
+            for (int i = 0; i < 10; i++) {
+                optionSelected[i] = 0;
+            }
+            topicListViewAdapter = new TopicListViewAdapter();
+            topicsListView.setAdapter(topicListViewAdapter);
+
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(searchView.getApplicationWindowToken(), 0);
         } else if (afterSearchToolbar.getVisibility() == View.VISIBLE) {
@@ -378,6 +392,13 @@ public class MainActivity extends AppCompatActivity {
             afterSearchToolbar.setVisibility(View.GONE);
             ArrayList<QuestionModel> questionModels = databaseAdapter.getAllData();
             questionModelArrayList = questionModels;
+
+            for (int i = 0; i < 10; i++) {
+                optionSelected[i] = 0;
+            }
+            topicListViewAdapter = new TopicListViewAdapter();
+            topicsListView.setAdapter(topicListViewAdapter);
+
             adapter.updateList(questionModels);
         } else {
             super.onBackPressed();
@@ -387,7 +408,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        barChart.animateY(2000);
+        barChart.animateY(1500);
         barChart.invalidate();
     }
 
@@ -444,8 +465,7 @@ public class MainActivity extends AppCompatActivity {
         data.setBarWidth(0.9f); // set custom bar width
         barChart.setData(data);
         barChart.setFitBars(true); // make the x-axis fit exactly all bars
-
-
+        
         Legend l = barChart.getLegend();
         l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
         l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
@@ -464,6 +484,12 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<QuestionModel> questionModels;
 
         questionModels = databaseAdapter.getAllMatching(textSearchedFor, optionSelected);
+
+        for (int i = 0; i < 10; i++) {
+            optionSelected[i] = 0;
+        }
+        topicListViewAdapter = new TopicListViewAdapter();
+        topicsListView.setAdapter(topicListViewAdapter);
 
         return questionModels;
     }
