@@ -103,10 +103,92 @@ public class DatabaseAdapter {
         return questionModels;
     }
 
+    public float[] getFromTopic(int i) {
+        SQLiteDatabase database = databaseHelper.getReadableDatabase();
+        String toAdd = "";
+        if (i == 0) {
+            toAdd = "'%Solving'";
+        } else if (i == 1) {
+            toAdd = "'%Sufficiency'";
+        } else if (i == 2) {
+            toAdd = "'%Comprehension'";
+        } else if (i == 3) {
+            toAdd = "'%Reasoning'";
+        } else {
+            toAdd = "'%Correction'";
+        }
+        Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns,
+                DatabaseHelper.TOPIC + " LIKE " + toAdd,
+                null,
+                null,
+                null,
+                null);
+
+        float[] arr = new float[4];
+        for (int j = 0; j < 4; j++) {
+            arr[j] = 0;
+        }
+        while (cursor.moveToNext()) {
+            QuestionModel temp = getQuestionModelFromCursor(cursor);
+            if (TextUtils.isEmpty(temp.getMarked()) && TextUtils.isEmpty(temp.getTimeTaken())) {
+                arr[0]++;
+            } else if (TextUtils.isEmpty(temp.getMarked()) && !TextUtils.isEmpty(temp.getTimeTaken())) {
+                arr[1]++;
+            } else if (!TextUtils.isEmpty(temp.getMarked()) && temp.getMarked().equals(temp.getCorrect())) {
+                arr[3]++;
+            } else {
+                arr[2]++;
+            }
+        }
+        return arr;
+    }
+
+    public float averageTimeTaken(int i) {
+        SQLiteDatabase database = databaseHelper.getReadableDatabase();
+        String toAdd = "";
+        if (i == 0) {
+            toAdd = "'%Solving'";
+        } else if (i == 1) {
+            toAdd = "'%Sufficiency'";
+        } else if (i == 2) {
+            toAdd = "'%Comprehension'";
+        } else if (i == 3) {
+            toAdd = "'%Reasoning'";
+        } else {
+            toAdd = "'%Correction'";
+        }
+        int count = 0;
+        long timeTaken = 0;
+        Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns,
+                DatabaseHelper.TOPIC + " LIKE " + toAdd +" AND "+
+                        DatabaseHelper.TIME_TAKEN + " IS NOT NULL ",
+                null,
+                null,
+                null,
+                null);
+        while (cursor.moveToNext()) {
+            QuestionModel temp = getQuestionModelFromCursor(cursor);
+            if (!TextUtils.isEmpty(temp.getTimeTaken())) {
+                String[] arr = temp.getTimeTaken().split(":");
+                int min = Integer.parseInt(arr[0]);
+                int sec = Integer.parseInt(arr[1]);
+                timeTaken += min * 60 + sec;
+                count++;
+            }
+        }
+        if(count!=0){
+            return timeTaken/count;
+        }
+        else {
+            return 0;
+        }
+
+    }
+
     public ArrayList<QuestionModel> getAllUnattempted() {
         SQLiteDatabase database = databaseHelper.getReadableDatabase();
         Cursor cursor = database.query(DatabaseHelper.TABLE_NAME, allColumns,
-                DatabaseHelper.MARKED + " IS NULL"
+                DatabaseHelper.MARKED + " "
                 , null,
                 null, null,
                 DatabaseHelper.ID);

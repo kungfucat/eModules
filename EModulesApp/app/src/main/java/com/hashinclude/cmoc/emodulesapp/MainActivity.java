@@ -3,6 +3,7 @@ package com.hashinclude.cmoc.emodulesapp;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +13,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -27,11 +29,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.interfaces.datasets.IBarDataSet;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelSlideListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,7 +82,8 @@ public class MainActivity extends AppCompatActivity {
     TextView afterSearchTextView;
 
     //    FOR CHARTS :
-    BarChart barChart;
+    BarChart barChart, stackedBarChart;
+    PieChart pieChart;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,11 +102,11 @@ public class MainActivity extends AppCompatActivity {
         arrayList.add("Correct Questions");
         arrayList.add("Incorrect Questions");
         arrayList.add("Unattempted Questions");
-        arrayList.add("Quant Problem Solving");
-        arrayList.add("Quant Data Sufficiency");
-        arrayList.add("Verbal Reading Comprehension");
-        arrayList.add("Verbal Critical Reasoning");
-        arrayList.add("Verbal Sentence Correction");
+        arrayList.add("Quant Problem Solving (QPS)");
+        arrayList.add("Quant Data Sufficiency (QDS)");
+        arrayList.add("Verbal Reading Comprehension (VRC)");
+        arrayList.add("Verbal Critical Reasoning (VCR)");
+        arrayList.add("Verbal Sentence Correction (VSC)");
 
         databaseAdapter = new DatabaseAdapter(context);
         questionModelArrayList = databaseAdapter.getAllData();
@@ -118,11 +130,24 @@ public class MainActivity extends AppCompatActivity {
         afterSearchBackArrow = findViewById(R.id.afterSearchToolBarBackArrow);
         afterSearchTextView = findViewById(R.id.afterSearchTextView);
 
+//        FOR CHARTS
+        barChart = findViewById(R.id.barChart);
+        pieChart = findViewById(R.id.pieChart);
+        stackedBarChart = findViewById(R.id.stackedBarChart);
+
 
         topicListViewAdapter = new TopicListViewAdapter();
         topicsListView.setAdapter(topicListViewAdapter);
 
-        slidingUpPanelLayout.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
+        //HANDLE THE CLICK JUST OUTSIDE LISTVIEW TO AVOID OPENING OF QUESTION UNKNOWINGLY
+        rootListViewForSearch.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                return true;
+            }
+        });
+
+        slidingUpPanelLayout.addPanelSlideListener(new PanelSlideListener() {
             @Override
             public void onPanelSlide(View panel, float slideOffset) {
 
@@ -131,13 +156,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
                 if (previousState == SlidingUpPanelLayout.PanelState.COLLAPSED) {
-                    barChart.animateY(1500);
+                    pieChart.animateY(1500);
+                    pieChart.invalidate();
+                    stackedBarChart.animateY(2000);
+                    stackedBarChart.invalidate();
+                    barChart.animateY(2500);
                     barChart.invalidate();
-                }
-                if (previousState == SlidingUpPanelLayout.PanelState.EXPANDED) {
-                    normalToolbar.setVisibility(View.VISIBLE);
-                    searchView.setVisibility(View.GONE);
-                    rootListViewForSearch.setVisibility(View.GONE);
                 }
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(panel.getApplicationWindowToken(), 0);
@@ -145,8 +169,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-//        FOR CHARTS
-        barChart = findViewById(R.id.barChart);
         adapter = new MainRecyclerViewAdapter(this, questionModelArrayList);
         mainRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mainRecyclerView.setAdapter(adapter);
@@ -213,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setUpAfterSearchBar() {
-        afterSearchTextView.setText(questionModelArrayList.size() + " Results");
+        afterSearchTextView.setText(questionModelArrayList.size() + " Result(s)");
         afterSearchBackArrow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -238,6 +260,13 @@ public class MainActivity extends AppCompatActivity {
                 afterSearchToolbar.setVisibility(View.GONE);
                 searchView.setVisibility(View.GONE);
                 rootListViewForSearch.setVisibility(View.GONE);
+
+                for (int i = 0; i < 10; i++) {
+                    optionSelected[i] = 0;
+                }
+                topicListViewAdapter = new TopicListViewAdapter();
+                topicsListView.setAdapter(topicListViewAdapter);
+
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(view.getApplicationWindowToken(), 0);
 
@@ -284,6 +313,7 @@ public class MainActivity extends AppCompatActivity {
                     if (!TextUtils.isEmpty(temp)) {
                         String toSearch = temp.toLowerCase();
                         textSearchedFor = toSearch;
+                        somethingSelected = true;
                     }
                     for (int i = 0; i < 10; i++) {
                         if (optionSelected[i] == 1) {
@@ -304,11 +334,6 @@ public class MainActivity extends AppCompatActivity {
                     rootListViewForSearch.setVisibility(View.GONE);
                     afterSearchToolbar.setVisibility(View.VISIBLE);
                     afterSearchTextView.setText(questionModelArrayList.size() + " Result(s)");
-                    for (int i = 0; i < 10; i++) {
-                        optionSelected[i] = 0;
-                    }
-                    topicListViewAdapter = new TopicListViewAdapter();
-                    topicsListView.setAdapter(topicListViewAdapter);
 
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(searchView.getApplicationWindowToken(), 0);
@@ -334,7 +359,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         ArrayList<QuestionModel> questionModels = getDataForCurrentSearch();
                         questionModelArrayList = questionModels;
-                        adapter.updateList(questionModels);
+                        adapter.updateList(questionModelArrayList);
                     } catch (Exception e) {
                         Log.d("EXCEPTION", e.toString());
 
@@ -362,6 +387,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
     @Override
     public void onBackPressed() {
         if (searchView.getVisibility() == View.VISIBLE) {
@@ -369,6 +395,13 @@ public class MainActivity extends AppCompatActivity {
             searchView.setVisibility(View.GONE);
             rootListViewForSearch.setVisibility(View.GONE);
             afterSearchToolbar.setVisibility(View.GONE);
+
+            for (int i = 0; i < 10; i++) {
+                optionSelected[i] = 0;
+            }
+            topicListViewAdapter = new TopicListViewAdapter();
+            topicsListView.setAdapter(topicListViewAdapter);
+
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(searchView.getApplicationWindowToken(), 0);
         } else if (afterSearchToolbar.getVisibility() == View.VISIBLE) {
@@ -378,6 +411,13 @@ public class MainActivity extends AppCompatActivity {
             afterSearchToolbar.setVisibility(View.GONE);
             ArrayList<QuestionModel> questionModels = databaseAdapter.getAllData();
             questionModelArrayList = questionModels;
+
+            for (int i = 0; i < 10; i++) {
+                optionSelected[i] = 0;
+            }
+            topicListViewAdapter = new TopicListViewAdapter();
+            topicsListView.setAdapter(topicListViewAdapter);
+
             adapter.updateList(questionModels);
         } else {
             super.onBackPressed();
@@ -387,7 +427,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        barChart.animateY(2000);
+        barChart.animateY(1500);
         barChart.invalidate();
     }
 
@@ -421,30 +461,118 @@ public class MainActivity extends AppCompatActivity {
                 incorrectTextView.setText(String.format("%03d", countIncorrect));
                 unattemptedTextView.setText(String.format("%03d", countUnattempted));
                 adapter.notifyDataSetChanged();
+                setUpCharts();
             }
         }
     }
 
     public void setUpCharts() {
+        int[] colorArray = {
+                Color.parseColor("#26C6DA"),
+                Color.parseColor("#FFF176"),
+                Color.parseColor("#FF7043"),
+                Color.parseColor("#9CCC65")};
 
-        List<BarEntry> entries = new ArrayList<>();
+//        PIE CHART
+        List<PieEntry> pieEntries = new ArrayList<>();
 
-        entries.add(new BarEntry(0f, 10f));
-        entries.add(new BarEntry(1f, 80f));
-        entries.add(new BarEntry(2f, 60f));
-        entries.add(new BarEntry(3f, 50f));
-        // gap of 2f
-        entries.add(new BarEntry(5f, 70f));
-        entries.add(new BarEntry(6f, 60f));
+        float cor = 0, incor = 0, unatt = 0, unans = 0;
+        ArrayList<QuestionModel> temp = databaseAdapter.getAllData();
+        for (int i = 0; i < temp.size(); i++) {
+            if (TextUtils.isEmpty(temp.get(i).getMarked()) && TextUtils.isEmpty(temp.get(i).getTimeTaken())) {
+                unatt++;
+            } else if (TextUtils.isEmpty(temp.get(i).getMarked()) && !TextUtils.isEmpty(temp.get(i).getTimeTaken())) {
+                unans++;
+            } else if (!TextUtils.isEmpty(temp.get(i).getMarked()) && temp.get(i).getMarked().equals(temp.get(i).getCorrect())) {
+                cor++;
+            } else {
+                incor++;
+            }
+        }
 
-        BarDataSet set = new BarDataSet(entries, "Number of Questions");
+        pieEntries.add(new PieEntry(unatt, "Unattempted"));
+        pieEntries.add(new PieEntry(unans, "Unanswered"));
+        pieEntries.add(new PieEntry(incor, "Incorrect"));
+        pieEntries.add(new PieEntry(cor, "Correct"));
 
+        PieDataSet pieDataSet = new PieDataSet(pieEntries, "");
+        pieDataSet.setXValuePosition(null);
+        pieDataSet.setValueTextSize(10f);
+        pieDataSet.setColors(colorArray);
 
+        PieData pieData = new PieData(pieDataSet);
+        pieChart.setEntryLabelColor(Color.WHITE);
+
+        pieChart.setData(pieData);
+        pieChart.getDescription().setEnabled(false);
+        pieChart.setDrawHoleEnabled(false);
+        pieChart.invalidate();
+
+//        STACKED BAR CHART
+        ArrayList<BarEntry> stackedBarEntry = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            float[] status = databaseAdapter.getFromTopic(i);
+
+            stackedBarEntry.add(new BarEntry(
+                    i, status));
+        }
+
+        BarDataSet set1;
+
+        set1 = new BarDataSet(stackedBarEntry, "");
+        set1.setDrawIcons(false);
+        set1.setColors(colorArray);
+        set1.setStackLabels(new String[]{"Unattempted", "Unanswered", "Incorrect", "Correct"});
+
+        ArrayList<IBarDataSet> dataSets = new ArrayList<IBarDataSet>();
+        dataSets.add(set1);
+
+        BarData stackedBarData = new BarData(dataSets);
+        stackedBarData.setValueTextColor(Color.BLACK);
+
+        stackedBarChart.setData(stackedBarData);
+        stackedBarChart.getDescription().setEnabled(false);
+        stackedBarChart.setFitBars(true);
+
+        stackedBarChart.invalidate();
+        XAxis stackerBarChartXAxis = stackedBarChart.getXAxis();
+        stackerBarChartXAxis.setValueFormatter(new IAxisValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                int v = (int) value;
+                if (v == 0) {
+                    return "QPS";
+                }
+                if (v == 1) {
+                    return "QDS";
+                }
+                if (v == 2) {
+                    return "VRC";
+                }
+                if (v == 3) {
+                    return "VCR";
+                }
+                if (v == 4) {
+                    return "VSC";
+                }
+                return "";
+            }
+        });
+
+//        BAR CHART
+
+        List<BarEntry> barEntries = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            barEntries.add(new BarEntry((float) i, databaseAdapter.averageTimeTaken(i)));
+        }
+
+        BarDataSet set = new BarDataSet(barEntries, "Average time per topic (sec.)");
         BarData data = new BarData(set);
         data.setBarWidth(0.9f); // set custom bar width
         barChart.setData(data);
         barChart.setFitBars(true); // make the x-axis fit exactly all bars
-
 
         Legend l = barChart.getLegend();
         l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
@@ -456,7 +584,30 @@ public class MainActivity extends AppCompatActivity {
         l.setTextSize(11f);
         l.setXEntrySpace(4f);
         barChart.getDescription().setEnabled(false);
-        barChart.animateY(1500);
+
+        XAxis xAxis = barChart.getXAxis();
+        xAxis.setValueFormatter(new IAxisValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                int v = (int) value;
+                if (v == 0) {
+                    return "QPS";
+                }
+                if (v == 1) {
+                    return "QDS";
+                }
+                if (v == 2) {
+                    return "VRC";
+                }
+                if (v == 3) {
+                    return "VCR";
+                }
+                if (v == 4) {
+                    return "VSC";
+                }
+                return "";
+            }
+        });
         barChart.invalidate();
     }
 
@@ -464,6 +615,12 @@ public class MainActivity extends AppCompatActivity {
         ArrayList<QuestionModel> questionModels;
 
         questionModels = databaseAdapter.getAllMatching(textSearchedFor, optionSelected);
+
+        for (int i = 0; i < 10; i++) {
+            optionSelected[i] = 0;
+        }
+        topicListViewAdapter = new TopicListViewAdapter();
+        topicsListView.setAdapter(topicListViewAdapter);
 
         return questionModels;
     }
