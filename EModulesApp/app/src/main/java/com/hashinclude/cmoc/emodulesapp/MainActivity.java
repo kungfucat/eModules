@@ -2,7 +2,6 @@ package com.hashinclude.cmoc.emodulesapp;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -236,7 +235,6 @@ public class MainActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         }));
-
 
         setUpSearchBar();
         setUpCharts();
@@ -517,21 +515,13 @@ public class MainActivity extends AppCompatActivity {
         pieChart.notifyDataSetChanged();
         pieChart.invalidate();
 
-//        STACKED BAR CHART
-        setUpStackedBarChart();
         //BAR CHART
-        List<BarEntry> barEntries = new ArrayList<>();
+        BarChartTask task = new BarChartTask();
+        task.execute();
 
-        for (int i = 0; i < 5; i++) {
-            barEntries.add(new BarEntry((float) i, databaseAdapter.averageTimeTaken(i)));
-        }
-
-        BarDataSet set = new BarDataSet(barEntries, "Average time per topic (sec.)");
-        BarData data = new BarData(set);
-        data.setBarWidth(0.9f); // set custom bar width
-        barChart.setData(data);
-        barChart.notifyDataSetChanged();
-        barChart.invalidate();
+//        STACKED BAR CHART
+        StackedBarChartTask stackedBarChartTask=new StackedBarChartTask();
+        stackedBarChartTask.execute();
     }
 
     public void setUpCharts() {
@@ -726,5 +716,69 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+    }
+
+    class StackedBarChartTask extends AsyncTask<Void, Void, Void> {
+        ArrayList<BarEntry> stackedBarEntry;
+        BarDataSet set1;
+        ArrayList<IBarDataSet> dataSets;
+        BarData stackedBarData;
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            stackedBarEntry = new ArrayList<>();
+            dataSets = new ArrayList<>();
+
+            for (int i = 0; i < 5; i++) {
+                float[] status = databaseAdapter.getFromTopic(i);
+                stackedBarEntry.add(new BarEntry(
+                        i, status));
+            }
+
+            set1 = new BarDataSet(stackedBarEntry, "");
+            set1.setDrawIcons(false);
+            set1.setColors(colorArray);
+            set1.setStackLabels(new String[]{"Unattempted", "Unanswered", "Incorrect", "Correct"});
+            dataSets.add(set1);
+
+            stackedBarData = new BarData(dataSets);
+            stackedBarData.setValueTextColor(Color.BLACK);
+           return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+
+            stackedBarChart.setData(stackedBarData);
+            stackedBarChart.notifyDataSetChanged();
+            stackedBarChart.invalidate();
+
+        }
+    }
+
+    class BarChartTask extends AsyncTask<Void, Void, Void> {
+        List<BarEntry> barEntries = new ArrayList<>();
+        BarDataSet set;
+        BarData data;
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            for (int i = 0; i < 5; i++) {
+                barEntries.add(new BarEntry((float) i, databaseAdapter.averageTimeTaken(i)));
+            }
+            set = new BarDataSet(barEntries, "Average time per topic (sec.)");
+            data = new BarData(set);
+            data.setBarWidth(0.9f); // set custom bar width
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            barChart.setData(data);
+            barChart.notifyDataSetChanged();
+            barChart.invalidate();
+        }
     }
 }
