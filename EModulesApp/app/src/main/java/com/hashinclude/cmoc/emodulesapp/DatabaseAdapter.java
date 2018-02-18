@@ -182,7 +182,6 @@ public class DatabaseAdapter {
         else {
             return 0;
         }
-
     }
 
     public ArrayList<QuestionModel> getAllUnattempted() {

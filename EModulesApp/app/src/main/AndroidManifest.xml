@@ -6,9 +6,9 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/icon_emodules"
+        android:icon="@drawable/notebook"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/icon_emodules_round"
+        android:roundIcon="@drawable/notebook"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity

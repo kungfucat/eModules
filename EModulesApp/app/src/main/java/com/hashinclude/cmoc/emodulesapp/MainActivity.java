@@ -2,8 +2,8 @@ package com.hashinclude.cmoc.emodulesapp;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
@@ -79,11 +79,18 @@ public class MainActivity extends AppCompatActivity {
 
     LinearLayout afterSearchToolbar;
     ImageView afterSearchBackArrow;
+    QuestionModel currentModelBeforeClicked, afterClickQuestionModel;
     TextView afterSearchTextView;
 
     //    FOR CHARTS :
     BarChart barChart, stackedBarChart;
     PieChart pieChart;
+    int[] colorArray = {
+            Color.parseColor("#26C6DA"),
+            Color.parseColor("#FFF176"),
+            Color.parseColor("#FF7043"),
+            Color.parseColor("#9CCC65")};
+    float pieCorrect = 0, pieIncorrect = 0, pieUnattempted = 0, pieUnanswered = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -205,7 +212,8 @@ public class MainActivity extends AppCompatActivity {
 //                Sent the intent to SingleQuestionActivity
                 Intent intent = new Intent(context, SingleQuestionActivity.class);
                 intent.putExtra("positionInRecyclerView", position);
-                intent.putExtra("questionModel", questionModelArrayList.get(position));
+                currentModelBeforeClicked = questionModelArrayList.get(position);
+                intent.putExtra("questionModel", currentModelBeforeClicked);
                 startActivityForResult(intent, REQUEST_CODE);
             }
 
@@ -227,7 +235,6 @@ public class MainActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         }));
-
 
         setUpSearchBar();
         setUpCharts();
@@ -425,13 +432,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        barChart.animateY(1500);
-        barChart.invalidate();
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -446,10 +446,11 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 int position = data.getIntExtra("recyclerViewPosition", 0);
                 int idOfQuestion = data.getIntExtra("idOfQuestion", 1);
-                QuestionModel questionModel = databaseAdapter.getDataForASingleRow(idOfQuestion);
-                questionModelArrayList.set(position, questionModel);
-                if (questionModel.getMarked() != null) {
-                    if (questionModel.getMarked() == questionModel.getCorrect()) {
+                afterClickQuestionModel = databaseAdapter.getDataForASingleRow(idOfQuestion);
+                questionModelArrayList.set(position, afterClickQuestionModel);
+                if (TextUtils.isEmpty(currentModelBeforeClicked.getMarked()) &&
+                        !TextUtils.isEmpty(afterClickQuestionModel.getMarked())) {
+                    if (afterClickQuestionModel.getMarked().equals(afterClickQuestionModel.getCorrect())) {
                         countUnattempted--;
                         countCorrect++;
                     } else {
@@ -461,39 +462,97 @@ public class MainActivity extends AppCompatActivity {
                 incorrectTextView.setText(String.format("%03d", countIncorrect));
                 unattemptedTextView.setText(String.format("%03d", countUnattempted));
                 adapter.notifyDataSetChanged();
-                setUpCharts();
+                resetCharts();
+                currentModelBeforeClicked = afterClickQuestionModel;
             }
         }
     }
 
+    public void resetCharts() {
+        List<PieEntry> pieEntries = new ArrayList<>();
+        if (!TextUtils.isEmpty(currentModelBeforeClicked.getMarked())) {
+
+        } else {
+            if (!TextUtils.isEmpty(afterClickQuestionModel.getMarked())) {
+                if (afterClickQuestionModel.getMarked().equals(afterClickQuestionModel.getCorrect())) {
+                    if (TextUtils.isEmpty(currentModelBeforeClicked.getTimeTaken())) {
+                        pieUnattempted--;
+                        pieCorrect++;
+                    } else {
+                        pieUnanswered--;
+                        pieCorrect++;
+                    }
+                } else {
+                    if (TextUtils.isEmpty(currentModelBeforeClicked.getTimeTaken())) {
+                        pieUnattempted--;
+                        pieIncorrect++;
+                    } else {
+                        pieUnanswered--;
+                        pieIncorrect++;
+                    }
+                }
+            } else {
+                if (TextUtils.isEmpty(currentModelBeforeClicked.getTimeTaken()))
+                    pieUnattempted--;
+                pieUnanswered++;
+            }
+        }
+
+        pieEntries.add(new PieEntry(pieUnattempted, "Unattempted"));
+        pieEntries.add(new PieEntry(pieUnanswered, "Unanswered"));
+        pieEntries.add(new PieEntry(pieIncorrect, "Incorrect"));
+        pieEntries.add(new PieEntry(pieCorrect, "Correct"));
+
+        PieDataSet pieDataSet = new PieDataSet(pieEntries, "");
+        pieDataSet.setXValuePosition(null);
+        pieDataSet.setValueTextSize(10f);
+        pieDataSet.setColors(colorArray);
+
+        PieData pieData = new PieData(pieDataSet);
+        pieChart.setEntryLabelColor(Color.WHITE);
+
+        pieChart.setData(pieData);
+        pieChart.notifyDataSetChanged();
+        pieChart.invalidate();
+
+        //BAR CHART
+        BarChartTask task = new BarChartTask();
+        task.execute();
+
+//        STACKED BAR CHART
+        StackedBarChartTask stackedBarChartTask=new StackedBarChartTask();
+        stackedBarChartTask.execute();
+    }
+
     public void setUpCharts() {
-        int[] colorArray = {
-                Color.parseColor("#26C6DA"),
-                Color.parseColor("#FFF176"),
-                Color.parseColor("#FF7043"),
-                Color.parseColor("#9CCC65")};
+        setUpPieChart();
+        setUpStackedBarChart();
+        setUpBarChart();
+    }
+
+
+    public void setUpPieChart() {
 
 //        PIE CHART
         List<PieEntry> pieEntries = new ArrayList<>();
 
-        float cor = 0, incor = 0, unatt = 0, unans = 0;
         ArrayList<QuestionModel> temp = databaseAdapter.getAllData();
         for (int i = 0; i < temp.size(); i++) {
             if (TextUtils.isEmpty(temp.get(i).getMarked()) && TextUtils.isEmpty(temp.get(i).getTimeTaken())) {
-                unatt++;
+                pieUnattempted++;
             } else if (TextUtils.isEmpty(temp.get(i).getMarked()) && !TextUtils.isEmpty(temp.get(i).getTimeTaken())) {
-                unans++;
+                pieUnanswered++;
             } else if (!TextUtils.isEmpty(temp.get(i).getMarked()) && temp.get(i).getMarked().equals(temp.get(i).getCorrect())) {
-                cor++;
+                pieCorrect++;
             } else {
-                incor++;
+                pieIncorrect++;
             }
         }
 
-        pieEntries.add(new PieEntry(unatt, "Unattempted"));
-        pieEntries.add(new PieEntry(unans, "Unanswered"));
-        pieEntries.add(new PieEntry(incor, "Incorrect"));
-        pieEntries.add(new PieEntry(cor, "Correct"));
+        pieEntries.add(new PieEntry(pieUnattempted, "Unattempted"));
+        pieEntries.add(new PieEntry(pieUnanswered, "Unanswered"));
+        pieEntries.add(new PieEntry(pieIncorrect, "Incorrect"));
+        pieEntries.add(new PieEntry(pieCorrect, "Correct"));
 
         PieDataSet pieDataSet = new PieDataSet(pieEntries, "");
         pieDataSet.setXValuePosition(null);
@@ -507,6 +566,60 @@ public class MainActivity extends AppCompatActivity {
         pieChart.getDescription().setEnabled(false);
         pieChart.setDrawHoleEnabled(false);
         pieChart.invalidate();
+    }
+
+    public void setUpBarChart() {
+
+        List<BarEntry> barEntries = new ArrayList<>();
+
+        for (int i = 0; i < 5; i++) {
+            barEntries.add(new BarEntry((float) i, databaseAdapter.averageTimeTaken(i)));
+        }
+
+        BarDataSet set = new BarDataSet(barEntries, "Average time per topic (sec.)");
+        BarData data = new BarData(set);
+        data.setBarWidth(0.9f); // set custom bar width
+        barChart.setData(data);
+        barChart.setFitBars(true); // make the x-axis fit exactly all bars
+
+        Legend l = barChart.getLegend();
+        l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
+        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
+        l.setOrientation(Legend.LegendOrientation.HORIZONTAL);
+        l.setDrawInside(false);
+        l.setForm(Legend.LegendForm.SQUARE);
+        l.setFormSize(9f);
+        l.setTextSize(11f);
+        l.setXEntrySpace(4f);
+        barChart.getDescription().setEnabled(false);
+
+        XAxis xAxis = barChart.getXAxis();
+        xAxis.setValueFormatter(new IAxisValueFormatter() {
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                int v = (int) value;
+                if (v == 0) {
+                    return "QPS";
+                }
+                if (v == 1) {
+                    return "QDS";
+                }
+                if (v == 2) {
+                    return "VRC";
+                }
+                if (v == 3) {
+                    return "VCR";
+                }
+                if (v == 4) {
+                    return "VSC";
+                }
+                return "";
+            }
+        });
+        barChart.invalidate();
+    }
+
+    public void setUpStackedBarChart() {
 
 //        STACKED BAR CHART
         ArrayList<BarEntry> stackedBarEntry = new ArrayList<>();
@@ -559,56 +672,6 @@ public class MainActivity extends AppCompatActivity {
                 return "";
             }
         });
-
-//        BAR CHART
-
-        List<BarEntry> barEntries = new ArrayList<>();
-
-        for (int i = 0; i < 5; i++) {
-            barEntries.add(new BarEntry((float) i, databaseAdapter.averageTimeTaken(i)));
-        }
-
-        BarDataSet set = new BarDataSet(barEntries, "Average time per topic (sec.)");
-        BarData data = new BarData(set);
-        data.setBarWidth(0.9f); // set custom bar width
-        barChart.setData(data);
-        barChart.setFitBars(true); // make the x-axis fit exactly all bars
-
-        Legend l = barChart.getLegend();
-        l.setVerticalAlignment(Legend.LegendVerticalAlignment.BOTTOM);
-        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.LEFT);
-        l.setOrientation(Legend.LegendOrientation.HORIZONTAL);
-        l.setDrawInside(false);
-        l.setForm(Legend.LegendForm.SQUARE);
-        l.setFormSize(9f);
-        l.setTextSize(11f);
-        l.setXEntrySpace(4f);
-        barChart.getDescription().setEnabled(false);
-
-        XAxis xAxis = barChart.getXAxis();
-        xAxis.setValueFormatter(new IAxisValueFormatter() {
-            @Override
-            public String getFormattedValue(float value, AxisBase axis) {
-                int v = (int) value;
-                if (v == 0) {
-                    return "QPS";
-                }
-                if (v == 1) {
-                    return "QDS";
-                }
-                if (v == 2) {
-                    return "VRC";
-                }
-                if (v == 3) {
-                    return "VCR";
-                }
-                if (v == 4) {
-                    return "VSC";
-                }
-                return "";
-            }
-        });
-        barChart.invalidate();
     }
 
     public ArrayList<QuestionModel> getDataForCurrentSearch() {
@@ -653,5 +716,69 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
+    }
+
+    class StackedBarChartTask extends AsyncTask<Void, Void, Void> {
+        ArrayList<BarEntry> stackedBarEntry;
+        BarDataSet set1;
+        ArrayList<IBarDataSet> dataSets;
+        BarData stackedBarData;
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            stackedBarEntry = new ArrayList<>();
+            dataSets = new ArrayList<>();
+
+            for (int i = 0; i < 5; i++) {
+                float[] status = databaseAdapter.getFromTopic(i);
+                stackedBarEntry.add(new BarEntry(
+                        i, status));
+            }
+
+            set1 = new BarDataSet(stackedBarEntry, "");
+            set1.setDrawIcons(false);
+            set1.setColors(colorArray);
+            set1.setStackLabels(new String[]{"Unattempted", "Unanswered", "Incorrect", "Correct"});
+            dataSets.add(set1);
+
+            stackedBarData = new BarData(dataSets);
+            stackedBarData.setValueTextColor(Color.BLACK);
+           return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+
+            stackedBarChart.setData(stackedBarData);
+            stackedBarChart.notifyDataSetChanged();
+            stackedBarChart.invalidate();
+
+        }
+    }
+
+    class BarChartTask extends AsyncTask<Void, Void, Void> {
+        List<BarEntry> barEntries = new ArrayList<>();
+        BarDataSet set;
+        BarData data;
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            for (int i = 0; i < 5; i++) {
+                barEntries.add(new BarEntry((float) i, databaseAdapter.averageTimeTaken(i)));
+            }
+            set = new BarDataSet(barEntries, "Average time per topic (sec.)");
+            data = new BarData(set);
+            data.setBarWidth(0.9f); // set custom bar width
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            barChart.setData(data);
+            barChart.notifyDataSetChanged();
+            barChart.invalidate();
+        }
     }
 }
