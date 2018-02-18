@@ -75,17 +75,18 @@ Sample rendered HTML can be found [here](https://codepen.io/utkarshmttl/full/vdK
 > To get started...
 
 ### Step 1
-- **Option 1**
-    - 🍴 Fork this repo!
 
-- **Option 2**
-    - 👯 Clone this repo to your local machine using `git clone https://github.com/utkarshmttl/eModules.git`
+- 🍴 Fork this repo!
 
 ### Step 2
 
-- **HACK AWAY!** 🔨🔨🔨
+- 👯 Clone this repo to your local machine.
 
 ### Step 3
+
+- **HACK AWAY!** 🔨🔨🔨
+
+### Step 4
 
 - 🔃 Create a new pull request using <a href="https://github.com/utkarshmttl/eModules/compare" target="_blank">`https://github.com/utkarshmttl/eModules/compare`</a>.
 
