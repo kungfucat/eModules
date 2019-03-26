@@ -6,7 +6,7 @@ An android application that enables the user to practice from a set of questions
 
 <br>
 
->Demo of the app can be seen [here](http://kungfucat.me/images/portfolio/full/emodules.mp4).
+>Demo of the app can be seen [here](https://hb11.me/images/portfolio/full/eModules.mp4).
 
 <br><br>
 
